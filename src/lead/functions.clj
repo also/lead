@@ -11,10 +11,6 @@
 ;  :consolidation-fn the function used to consolidate the values for aggregation with other series or display
 ;  :values-per-point the number of values for each consolidated point
 
-(defn read-metric-file [filename] 
-  (with-open [f (io/reader filename)]
-    (json/read f :key-fn keyword)))
-
 (defn range-serieses [serieses]
   (let [start (apply min (map :start serieses)),
         end   (apply max (map :end serieses))]
@@ -64,12 +60,12 @@
 
 (defn sliced
   "Creates a new series by calling f for each time-slice of serieses"
-  [serieses f]
+  [serieses f, name]
   (if (seq serieses)
     (let [[normalized-serieses, start, end, step] (normalize-serieses serieses)
            consolidated-values (map consolidate-series-values normalized-serieses)
            values (apply map (fn [& values] (f values)) consolidated-values)]
-      {:start start, :end end, :step step, :values values})
+      [{:start start, :end end, :step step, :values values, :name name}])
     nil))
 
 (defn
@@ -77,21 +73,21 @@
     :aliases ["avg" "averageSeries"]}
   avg-serieses
   [serieses]
-  (sliced serieses safe-average))
+  (sliced serieses safe-average, "averageSeries"))
 
 (defn 
   ^{:args "T"
     :aliases ["min" "minSeries"]}
   min-serieses
   [serieses]
-  (sliced serieses safe-min))
+  (sliced serieses safe-min, "minSeries"))
 
 (defn 
   ^{:args "T"
     :aliases ["max" "maxSeries"]}
   max-serieses
   [serieses]
-  (sliced serieses safe-max))
+  (sliced serieses safe-max, "maxSeries"))
 
 (defn
   ^{:args "T*"
