@@ -107,11 +107,16 @@
 
 (defn fn-names [f] (cons (str (:name (meta f))) (:aliases (meta f))))
 
-(defn register-fns [fns]
+(defn register-fns
+  "Registers a list of functions by it's aliases."
+  [fns]
   (swap! fn-registry (partial apply assoc) (flatten
     (map (fn [f] (map (fn [n] [n f]) (fn-names f))) fns))))
 
-(defn find-fns [namespace] (filter #(:args (meta %)) (vals (ns-publics namespace))))
+(defn find-fns
+  "Find lead functions in a namespace."
+  [namespace]
+  (filter #(:args (meta %)) (vals (ns-publics namespace))))
 
 (register-fns (find-fns 'lead.functions))
 

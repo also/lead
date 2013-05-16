@@ -8,4 +8,7 @@
     [org.clojure/math.numeric-tower "0.0.2"]
     [org.clojure/data.json "0.2.2"]
     [the/parsatron "0.0.3"]
-    [clj-http "0.7.2"]])
+    [clj-http "0.7.2"]
+    [ring/ring-core "1.1.8"]
+    [ring/ring-jetty-adapter "1.1.8"]
+    [ring/ring-json "0.2.0"]])
