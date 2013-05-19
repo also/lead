@@ -48,8 +48,7 @@
         end                 (- max-end (mod (- max-end start) step))]
     [normalized-serieses, start, end, step]))
 
-; TODO the name is kind of a lie, it filters out all falsey values
-(defn non-nil [values] (filter identity values))
+(defn non-nil [values] (keep identity values))
 
 (defn safe
   "Calls f with the non-nil entries from values, if any. Returns nil otherwise."
