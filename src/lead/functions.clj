@@ -1,6 +1,11 @@
 (ns lead.functions
-  [:require [clojure.math.numeric-tower :as numeric-tower] [clojure.java.io :as io] [clojure.data.json :as json]]
-  [:use [lead.parser :only (parse)] lead.connector])
+  [:require
+   [clojure.math.numeric-tower :as numeric-tower]
+   [clojure.java.io :as io]
+   [clojure.data.json :as json]
+   [clojure.string :as string]]
+  [:use
+   [lead.parser :only (parse)] lead.connector])
 
 ; A series has these attributes:
 ;  :values           a list of values
@@ -10,6 +15,39 @@
 ;
 ;  :consolidation-fn the function used to consolidate the values for aggregation with other series or display
 ;  :values-per-point the number of values for each consolidated point
+
+(def call-function)
+
+(defn name->path [name] (string/split name #"\."))
+(defn path->name [path] (string/join "." path))
+
+(defn
+  same-depth?
+  [paths]
+  (apply = (map count paths)))
+
+(defn filter-path-segments
+  [important-segments path]
+  (reduce (fn [acc [segment important?]] (if important? (conj acc segment) acc)) [] (map vector path important-segments)))
+
+(defn varying-path-segments
+  [paths]
+  (apply map
+         (fn
+           [& segments]
+           (not= 1 (count (set segments))))
+         paths))
+
+(defn
+  simplify-serieses-names
+  "Removes common segments from paths if all are the same length."
+  [serieses]
+  (let [paths (map name->path (map :name serieses))]
+    (if (same-depth? paths)
+      (let [important-segments (varying-path-segments paths)
+            simplified-paths (map (partial filter-path-segments important-segments) paths)]
+        (map (fn [series simplified-path] (assoc series :name (path->name simplified-path))) serieses simplified-paths))
+      serieses)))
 
 (defn range-serieses [serieses]
   (let [start (apply min (map :start serieses)),
@@ -65,7 +103,7 @@
     (let [[normalized-serieses, start, end, step] (normalize-serieses serieses)
            consolidated-values (map consolidate-series-values normalized-serieses)
            values (apply map (fn [& values] (f values)) consolidated-values)]
-      [{:start start, :end end, :step step, :values values, :name name}])
+      [{:start start, :end end, :step step, :values values, :name (str name \( (string/join ", " (map :name serieses)) \))}])
     nil))
 
 (defn
@@ -88,6 +126,14 @@
   max-serieses
   [serieses]
   (sliced serieses safe-max, "maxSeries"))
+
+(defn
+  ^{:args "Tis"
+    :aliases ["groupByNode"]}
+  group-serieses-by-node
+  [serieses node-num aggregate]
+  (let [groups (group-by #(nth (name->path (:name %)) node-num) serieses)]
+    (flatten (map #(call-function aggregate [%]) (vals groups)))))
 
 (defn
   ^{:args "T*"
