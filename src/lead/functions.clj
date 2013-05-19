@@ -14,7 +14,7 @@
 ;  :consolidation-fn the function used to consolidate the values for aggregation with other series or display
 ;  :values-per-point the number of values for each consolidated point
 
-(def call-function)
+(declare call-function)
 
 (def fn-registry (atom {}))
 
