@@ -1,6 +1,7 @@
 (ns lead.parser
-  (:refer-clojure :exclude [char])
-  (:use the.parsatron))
+  [:refer-clojure :exclude [char]]
+  [:use the.parsatron]
+  [:require [clojure.string :as string]])
 
 (declare p-expr)
 
@@ -17,7 +18,7 @@
   (let->> [open  (either (char \') (char \"))
            chars (many (token #(not= open %)))
            _     (char open)]
-    (always (apply str chars))))
+    (always (string/join chars))))
 
 (defparser integer []
   (many1 (digit)))
@@ -46,7 +47,7 @@
   (let->> [intpart  (signed-integer)
            fracpart (opt (frac) [])
            expart   (opt (exp) [])]
-    (always (read-string (apply str (concat intpart fracpart expart))))))
+    (always (read-string (string/join (concat intpart fracpart expart))))))
 
 (defparser separated-by [sep p]
   (either
@@ -57,7 +58,7 @@
 
 (defparser p-identifier []
   (let->> [chars (many (letter))]
-    (always (apply str chars))))
+    (always (string/join chars))))
 
 (defparser p-function-call []
   (let->> [function-name (p-identifier)

@@ -85,7 +85,7 @@
 (defn sliced
   "Creates a new series by calling f for each time-slice of serieses"
   [serieses f, name]
-  (if (seq serieses)
+  (when (seq serieses)
     (let [[normalized-serieses, start, end, step] (normalize-serieses serieses)
            consolidated-values (map consolidate-series-values normalized-serieses)
            values (apply map (fn [& values] (f values)) consolidated-values)]
