@@ -120,6 +120,13 @@
   (sliced serieses safe-max, "maxSeries"))
 
 (defn
+  ^{:args "T"
+    :aliases ["sum", "sumSeries"]}
+  sum-serieses
+  [serieses]
+  (sliced serieses safe-sum "sumSeries"))
+
+(defn
   ^{:args "Tis"
     :aliases ["groupByNode"]}
   group-serieses-by-node
