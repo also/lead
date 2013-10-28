@@ -93,6 +93,11 @@
       [{:start start, :end end, :step step, :values values, :name (str name \( (string/join ", " (map :name serieses)) \))}])
     nil))
 
+(defn map-serieses
+  "Applies the map function to each value in each series"
+  [serieses f name]
+  (map #(assoc % :name (str name \( (:name %) \)) :values (map f (:values %))) serieses))
+
 (defn
   ^{:args "T"
     :aliases ["avg" "averageSeries"]}
@@ -128,6 +133,12 @@
   flatten-serieseses
   [& serieses]
   (flatten serieses))
+
+(defn
+  ^{:args "Ti"}
+  scale
+  [serieses factor]
+  (map-serieses serieses #(if % (* factor %)) "scale"))
 
 (defn
   ^{:args "sii"

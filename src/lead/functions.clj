@@ -1,8 +1,7 @@
 (ns lead.functions
   [:require
    [clojure.java.io :as io]
-   [clojure.data.json :as json]
-   ]
+   [clojure.data.json :as json]]
   [:use
    [lead.parser :only (parse)] ])
 
@@ -16,7 +15,6 @@
 ;  :values-per-point the number of values for each consolidated point
 
 (def call-function)
-
 
 (def fn-registry (atom {}))
 
