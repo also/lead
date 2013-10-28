@@ -2,16 +2,19 @@
   [:use ring.middleware.params
         lead.parser
         lead.functions
-        ring.middleware.json])
+        ring.middleware.json
+        compojure.core]
+  [:require [compojure.route :as route]
+            [lead.functions :as fns]])
 
-(defn handler [{params :params, uri :uri}]
-  (case uri
-    "/render/"
-      (let [result (run (parse (params "target")))]
-        {:status 200
-         :body result})
-    {:status 404
-     :body "Not Found"}))
+(defroutes handler
+  (GET "/render/" [target]
+    (let [result (run (parse target))]
+      {:status 200
+       :body result}))
+  (GET "/functions/" []
+    {:status 200 :body (keys @fns/fn-registry)})
+  (route/not-found "Not Found"))
 
 
 (def app
