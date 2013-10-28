@@ -75,7 +75,7 @@
 (defn sum [values]
   (reduce + values))
 
-(defn average [values] 
+(defn average [values]
   (/ (sum values) (count values)))
 
 (def safe-average (partial safe average))
@@ -113,14 +113,14 @@
   [serieses]
   (sliced serieses safe-average, "averageSeries"))
 
-(defn 
+(defn
   ^{:args "T"
     :aliases ["min" "minSeries"]}
   min-serieses
   [serieses]
   (sliced serieses safe-min, "minSeries"))
 
-(defn 
+(defn
   ^{:args "T"
     :aliases ["max" "maxSeries"]}
   max-serieses
