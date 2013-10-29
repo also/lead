@@ -1,6 +1,9 @@
-(ns lead.functions-test
+(ns lead.builtin-functions-test
   (:use clojure.test
+        [lead.builtin-functions]
         [lead.functions]))
+
+(register-fns-from-namespace 'lead.builtin-functions)
 
 (defn fake-series [name values] {:name (str "fake." name), :step 1, :values (vec values), :start 0, :end (count values)})
 
