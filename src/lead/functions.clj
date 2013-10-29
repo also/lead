@@ -32,7 +32,7 @@
   (require namespace)
   (filter #(:args (meta %)) (vals (ns-publics namespace))))
 
-(register-fns (find-fns 'lead.builtin-functions))
+(def register-fns-from-namespace (comp register-fns find-fns))
 
 (defn call-function [function args]
   (if-let [f (@fn-registry function)]
