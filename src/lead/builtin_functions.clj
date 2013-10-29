@@ -134,14 +134,21 @@
 
 (defn
   ^{:args "T*"
-    :aliases ["flatten"]}
+    :aliases ["flatten" "group"]}
   flatten-serieseses
   [& serieses]
   (flatten serieses))
 
 (defn
+  ^{:args "Ti"
+    :aliases ["offset"]}
+  increment-serieses
+  [serieses amount]
+  (map-serieses serieses #(if % (+ amount %)) "offset"))
+
+(defn
   ^{:args "Ti"}
-  scale
+  scale-serieses
   [serieses factor]
   (map-serieses serieses #(if % (* factor %)) "scale"))
 

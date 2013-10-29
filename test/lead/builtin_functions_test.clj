@@ -25,6 +25,12 @@
 (deftest test-empty-avg
   (is (= nil (avg-serieses nil))))
 
+(deftest test-scale
+  (is (values= [twos] (scale-serieses [ones] 2))))
+
+(deftest test-increment
+  (is (values= [twos] (increment-serieses [ones] 1))))
+
 (deftest test-group-serieses-by-node
   (let [serieses [ones twos threes]]
     (is (values= [twos] (group-serieses-by-node serieses 0 "avg")))
