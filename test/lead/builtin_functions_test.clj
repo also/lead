@@ -39,6 +39,10 @@
   (is (values= [nils] (map-values-below-to-nil [ones] 2)))
   (is (values= [ones] (map-values-below-to-nil [ones] 1))))
 
+(deftest test-remove-above
+  (is (values= [nils] (map-values-above-to-nil [twos] 1)))
+  (is (values= [twos] (map-values-above-to-nil [twos] 2))))
+
 (deftest test-group-serieses-by-node
   (let [serieses [ones twos threes]]
     (is (values= [twos] (group-serieses-by-node serieses 0 "avg")))

@@ -175,3 +175,10 @@
   map-values-below-to-nil
   [serieses value]
   (replace-serieses-values-with-nil #(>= % value) serieses "removeBelowValue"))
+
+(defn
+  ^{:args "Ti"
+    :aliases ["removeAboveValue"]}
+  map-values-above-to-nil
+  [serieses value]
+  (replace-serieses-values-with-nil #(<= % value) serieses "removeBelowValue"))
