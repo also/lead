@@ -89,8 +89,7 @@
     (let [[normalized-serieses, start, end, step] (normalize-serieses serieses)
            consolidated-values (map consolidate-series-values normalized-serieses)
            values (apply map (fn [& values] (f values)) consolidated-values)]
-      [{:start start, :end end, :step step, :values values, :name (str name \( (string/join ", " (map :name serieses)) \))}])
-    nil))
+      [{:start start, :end end, :step step, :values values, :name (str name \( (string/join ", " (map :name serieses)) \))}])))
 
 (defn map-serieses
   "Applies the map function to each value in each series"
