@@ -165,3 +165,13 @@
   rename-serieses
   [serieses name]
   (map #(assoc % :name name) serieses))
+
+(defn replace-serieses-values-with-nil [f serieses name]
+  (map-serieses serieses #(if (f %) %) name))
+
+(defn
+  ^{:args "Ti"
+    :aliases ["removeBelowValue"]}
+  map-values-below-to-nil
+  [serieses value]
+  (replace-serieses-values-with-nil #(>= % value) serieses "removeBelowValue"))

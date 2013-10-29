@@ -10,6 +10,7 @@
 (def ones (fake-series "ones" (repeat 5 1)))
 (def twos (fake-series "twos" (repeat 5 2)))
 (def threes (fake-series "threes" (repeat 5 3)))
+(def nils (fake-series "nils" (repeat 5 nil)))
 
 (defn values= [expected actual] (every? identity (map #(= (:values %1) (:values %2)) expected actual)))
 
@@ -33,6 +34,10 @@
 
 (deftest test-alias
   (is (= "ones-alias" (-> (rename-serieses [ones] "ones-alias") first :name))))
+
+(deftest test-remove-below
+  (is (values= [nils] (map-values-below-to-nil [ones] 2)))
+  (is (values= [ones] (map-values-below-to-nil [ones] 1))))
 
 (deftest test-group-serieses-by-node
   (let [serieses [ones twos threes]]
