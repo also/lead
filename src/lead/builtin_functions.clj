@@ -158,3 +158,10 @@
   load-serieses
   [q start end]
   (connector/get-metrics q start end))
+
+(defn
+  ^{:args "Ts"
+    :aliases ["alias"]}
+  rename-serieses
+  [serieses name]
+  (map #(assoc % :name name) serieses))

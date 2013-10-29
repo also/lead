@@ -31,6 +31,9 @@
 (deftest test-increment
   (is (values= [twos] (increment-serieses [ones] 1))))
 
+(deftest test-alias
+  (is (= "ones-alias" (-> (rename-serieses [ones] "ones-alias") first :name))))
+
 (deftest test-group-serieses-by-node
   (let [serieses [ones twos threes]]
     (is (values= [twos] (group-serieses-by-node serieses 0 "avg")))
