@@ -34,8 +34,10 @@
 
 (def register-fns-from-namespace (comp register-fns find-fns))
 
+(defn get-fn [name] (@fn-registry name))
+
 (defn call-function [function args]
-  (if-let [f (@fn-registry function)]
+  (if-let [f (get-fn function)]
     (try
       (apply f args)
       (catch Throwable t
