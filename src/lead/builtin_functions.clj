@@ -147,7 +147,8 @@
   (map-serieses serieses #(if % (+ amount %)) "offset"))
 
 (defn
-  ^{:args "Ti"}
+  ^{:args "Ti"
+    :aliases ["scale"]}
   scale-serieses
   [serieses factor]
   (map-serieses serieses #(if % (* factor %)) "scale"))
