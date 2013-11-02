@@ -12,5 +12,6 @@
     [ring/ring-core "1.1.8"]
     [ring/ring-jetty-adapter "1.1.8"]
     [ring/ring-json "0.2.0"]
-    [compojure "1.1.5"]]
+    [compojure "1.1.5"]
+    [org.clojure/tools.logging "0.2.6"]]
 :aliases {"jetty" ["run" "-m" "lead.jetty-api/run"]})
