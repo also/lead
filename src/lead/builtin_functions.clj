@@ -130,7 +130,7 @@
   group-serieses-by-node
   [serieses node-num aggregate]
   (let [groups (group-by #(nth (name->path (:name %)) node-num) serieses)]
-    (flatten (map #(fns/call-function aggregate [%]) (vals groups)))))
+    (flatten (map #(fns/call-simple-function aggregate [%]) (vals groups)))))
 
 (defn
   ^{:args "T*"
@@ -154,10 +154,11 @@
   (map-serieses serieses #(if % (* factor %)) "scale"))
 
 (defn
-  ^{:args "sii"
-    :aliases ["load"]}
-  load-serieses
-  [q start end]
+  ^{:args "s"
+    :aliases ["load"]
+    :complicated true}
+  load-from-connector
+  [{start :start end :end} q]
   (connector/get-metrics q start end))
 
 (defn

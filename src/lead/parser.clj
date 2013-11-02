@@ -63,7 +63,7 @@
 (defparser p-function-call []
   (let->> [function-name (p-identifier)
            args          (between (char \() (char \)) (separated-by (char \,) (p-expr)))]
-    (always (list 'call-function function-name args))))
+    (always (list 'function-call function-name args))))
 
 (defparser ws []
   (many (token #{\space \tab})))

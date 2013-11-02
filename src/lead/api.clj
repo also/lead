@@ -9,8 +9,8 @@
             [lead.functions :as fns]])
 
 (defroutes handler
-  (GET "/render/" [target]
-    (let [result (run (parse target))]
+  (GET "/render/" [target start end]
+    (let [result (run (parse target) {:start (Integer/parseInt start) :end (Integer/parseInt end)})]
       {:status 200
        :body result}))
   (GET "/parse/" [target]

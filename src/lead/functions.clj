@@ -13,8 +13,41 @@
 ;
 ;  :consolidation-fn the function used to consolidate the values for aggregation with other series or display
 ;  :values-per-point the number of values for each consolidated point
+;
+; Options
+;  :start
+;  :end
+;
+; A simple function just transforms a series list--it wil be called with any series lists already loaded.
+; A complicated function is responsible calling load-series on it's arguments, so it is able to use or change the options.
 
-(declare call-function)
+(defprotocol SeriesSource
+  (load-serieses [this, opts]))
+
+(defn series-source? [x]
+  (satisfies? SeriesSource x))
+
+(defrecord ComplicatedFunctionCall [name f args]
+  SeriesSource
+  (load-serieses [this opts]
+    (try
+      (apply f opts args)
+      (catch Throwable t
+        (throw (RuntimeException. (str "Error calling " name ": " (.getMessage t)) t))))))
+
+(defrecord SimpleFunctionCall [name, f, args]
+  SeriesSource
+  (load-serieses [this, opts]
+    (let [loaded-args (map (fn [arg] (if (series-source? arg)
+                                       (load-serieses arg opts)
+                                       arg))
+                           (:args this))]
+      (try
+        (apply f loaded-args)
+        (catch Throwable t
+          (throw (RuntimeException. (str "Error calling " name ": " (.getMessage t)) t)))))))
+
+(declare function-call)
 
 (def fn-registry (atom {}))
 
@@ -36,12 +69,26 @@
 
 (defn get-fn [name] (@fn-registry name))
 
-(defn call-function [function args]
+(defn function-call [function args]
   (if-let [f (get-fn function)]
-    (try
-      (apply f args)
-      (catch Throwable t
-        (throw (RuntimeException. (str "Error calling " function ": " (.getMessage t)) t))))
+    (if (:complicated (meta f))
+      (ComplicatedFunctionCall. function f args)
+      (SimpleFunctionCall. function f args))
     (throw (RuntimeException. (str function " is not a function")))))
 
-(defn run [program] (binding [*ns* (the-ns 'lead.functions)] (eval program)))
+(defn call-function [function opts args]
+  (load-serieses opts (function-call function args)))
+
+(defn call-simple-function [function loaded-args]
+  (if-let [f (get-fn function)]
+    (if (:complicated (meta f))
+      (throw (RuntimeException. (str function " can't be used in this context")))
+      (try
+        (apply f loaded-args)
+        (catch Throwable t
+          (throw (RuntimeException. (str "Error calling " name ": " (.getMessage t)) t)))))
+    (throw (RuntimeException. (str function "is not a function")))))
+
+
+(defn build [program] (binding [*ns* (the-ns 'lead.functions)] (eval program)))
+(defn run [program opts] (load-serieses (build program) opts))
