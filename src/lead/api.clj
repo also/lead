@@ -13,6 +13,9 @@
     (let [result (run (parse target))]
       {:status 200
        :body result}))
+  (GET "/parse/" [target]
+    {:status 200
+     :body (parse target)})
   (GET "/functions/" []
     {:status 200 :body (keys @fns/fn-registry)})
   (route/not-found "Not Found"))
