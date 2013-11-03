@@ -27,6 +27,12 @@
 (defn series-source? [x]
   (satisfies? SeriesSource x))
 
+(defn load-args [opts args]
+  (map (fn [arg] (if (series-source? arg)
+                   (load-serieses arg opts)
+                   arg))
+       args))
+
 (defrecord ComplicatedFunctionCall [name f args]
   SeriesSource
   (load-serieses [this opts]
@@ -38,10 +44,7 @@
 (defrecord SimpleFunctionCall [name, f, args]
   SeriesSource
   (load-serieses [this, opts]
-    (let [loaded-args (map (fn [arg] (if (series-source? arg)
-                                       (load-serieses arg opts)
-                                       arg))
-                           (:args this))]
+    (let [loaded-args (load-args opts (:args this))]
       (try
         (apply f loaded-args)
         (catch Throwable t
@@ -69,12 +72,15 @@
 
 (defn get-fn [name] (@fn-registry name))
 
-(defn function-call [function args]
-  (if-let [f (get-fn function)]
-    (if (:complicated (meta f))
-      (ComplicatedFunctionCall. function f args)
-      (SimpleFunctionCall. function f args))
-    (throw (RuntimeException. (str function " is not a function")))))
+(defn function->source [name f args]
+  (if (:complicated (meta f))
+    (ComplicatedFunctionCall. name f args)
+    (SimpleFunctionCall. name f args)))
+
+(defn function-call [name args]
+  (if-let [f (get-fn name)]
+    (function->source name f args)
+    (throw (RuntimeException. (str name " is not a function")))))
 
 (defn call-function [function opts args]
   (load-serieses opts (function-call function args)))
