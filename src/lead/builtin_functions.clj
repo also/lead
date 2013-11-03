@@ -44,8 +44,9 @@
 (defn normalize-serieses [serieses]
   (let [step                (reduce numeric-tower/lcm (map :step serieses)),
         normalized-serieses (map #(assoc % :values-per-point (/ step (:step %))) serieses),
-        [start, max-end]    (range-serieses serieses),
-        end                 (- max-end (mod (- max-end start) step))]
+        [start, max-end]    (range-serieses serieses)
+        delta               (- max-end start)
+        end                 (if (= 0 delta) 0 (- max-end (mod delta step)))]
     [normalized-serieses, start, end, step]))
 
 (defn non-nil [values] (keep identity values))
