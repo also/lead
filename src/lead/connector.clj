@@ -1,8 +1,7 @@
 (ns lead.connector
-  [:require [clj-http.client :as http] [clojure.data.json :as json]]
-  (:use lead.graphite))
+  [:require [clj-http.client :as http] [clojure.data.json :as json]])
 
 (defn get-metrics [target from until]
-  (let [url (str "https://graph.hubteam.com/render/?target=" target "&from=" from "&until=" until "&format=json")
+  (let [url (str "http://localhost:5000/render/?target=" target "&from=" from "&until=" until)
         response (http/get url {:as :json})]
-    (graphite-json->serieses (:body response))))
+    (:body response)))
