@@ -2,7 +2,7 @@
   (:use lead.functions)
   (:require [lead.jetty-api :as server]))
 
-(defn -main [config-file]
+(defn -main [& [port config-file]]
   (binding [*ns* (the-ns 'lead.core)]
     (load-file config-file))
-  (server/run))
+  (server/run (Integer. port)))

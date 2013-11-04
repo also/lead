@@ -3,5 +3,5 @@
             [lead.api :as api]
             [lead.functions :as fns]))
 
-(defn run []
-  (jetty/run-jetty api/app {:port 3000}))
+(defn run [port]
+  (jetty/run-jetty api/app {:port port}))
