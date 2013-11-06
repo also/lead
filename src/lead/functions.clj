@@ -1,9 +1,4 @@
-(ns lead.functions
-  [:require
-   [clojure.java.io :as io]
-   [clojure.data.json :as json]]
-  [:use
-   [lead.parser :only (parse)] ])
+(ns lead.functions)
 
 ; A series has these attributes:
 ;  :values           a list of values
