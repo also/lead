@@ -3,8 +3,6 @@
         [lead.builtin-functions]
         [lead.functions]))
 
-(register-fns-from-namespace 'lead.builtin-functions)
-
 (defn fake-series [name values] {:name (str "fake." name), :step 1, :values (vec values), :start 0, :end (count values)})
 
 (def ones (fake-series "ones" (repeat 5 1)))
@@ -44,9 +42,11 @@
   (is (values= [twos] (map-values-above-to-nil [twos] 2))))
 
 (deftest test-group-serieses-by-node
-  (let [serieses [ones twos threes]]
-    (is (values= [twos] (group-serieses-by-node serieses 0 "avg")))
-    (is (values= serieses (group-serieses-by-node serieses 1 "avg")))))
+  (binding [*fn-registry* (create-registry)]
+    (register-fns-from-namespace 'lead.builtin-functions)
+    (let [serieses [ones twos threes]]
+      (is (values= [twos] (group-serieses-by-node serieses 0 "avg")))
+      (is (values= serieses (group-serieses-by-node serieses 1 "avg"))))))
 
 (deftest test-simplify-serieses-names
   (is (= ["ones" "twos" "threes"] (map :name (simplify-serieses-names [ones twos threes])))))
