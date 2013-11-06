@@ -90,7 +90,7 @@
         (apply f loaded-args)
         (catch Throwable t
           (throw (RuntimeException. (str "Error calling " name ": " (.getMessage t)) t)))))
-    (throw (RuntimeException. (str function "is not a function")))))
+    (throw (RuntimeException. (str function " is not a function")))))
 
 
 (defn build [program] (binding [*ns* (the-ns 'lead.functions)] (eval program)))
