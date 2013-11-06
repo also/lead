@@ -1,12 +1,12 @@
 (ns lead.api
-  [:use ring.middleware.params
+  (:use ring.middleware.params
         lead.parser
         lead.functions
         ring.middleware.json
         compojure.core
-        clojure.tools.logging]
-  [:require [compojure.route :as route]
-            [lead.functions :as fns]])
+        clojure.tools.logging)
+  (:require [compojure.route :as route]
+            [lead.functions :as fns]))
 
 (defroutes handler
   (GET "/render/" [target start end]

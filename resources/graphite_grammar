@@ -1,0 +1,39 @@
+target = expression
+
+<expression> = call / metric
+
+<digit> = #'[0-9]'
+whitespace = ' ' | '\t'
+<sp> = <whitespace*>
+
+<integer> = digit+
+
+<negative> = '-'
+<int-number> = negative? integer
+
+<float-number> = negative? integer '.' integer
+
+<sci-number> = (float-number / int-number) ('e' | 'E') integer
+
+string = <'"'> double-string-char+ <'"'> / <"'"> single-string-char+ <"'">
+
+<any> = #'.'
+
+<double-string-char> = !('"' | '\\') any
+<single-string-char> = !("'" | '\\') any
+
+true = <'true' | 'TRUE' | 'True'>
+false = <'false' | 'FALSE' | 'False'>
+boolean = true | false
+
+number = sci-number / float-number / int-number
+
+<arg> = boolean / number / string / expression
+
+func = #'(?i)[a-z_]' #'(?i)[a-z0-9_]'*
+args = (arg (<','> sp arg)*)?
+call = func <'('> args <')'>
+
+<metric-char> = #'(?i)[a-z0-9!#$%&"\'*+.:;<=>?@\[\\\]^_`|~-]'
+<metric-group> = '{' (metric-char / ',')+ '}'
+metric = (metric-char / metric-group)+
