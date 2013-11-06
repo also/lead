@@ -47,14 +47,16 @@
 
 (declare function-call)
 
-(def fn-registry (atom {}))
+(def ^:dynamic *fn-registry*)
+
+(defn create-registry [] (atom {}))
 
 (defn fn-names [f] (cons (str (:name (meta f))) (:aliases (meta f))))
 
 (defn register-fns
   "Registers a list of functions by it's aliases."
   [fns]
-  (if (seq fns) (swap! fn-registry (partial apply assoc) (flatten
+  (if (seq fns) (swap! *fn-registry* (partial apply assoc) (flatten
     (map (fn [f] (map (fn [n] [n f]) (fn-names f))) fns)))))
 
 (defn find-fns
@@ -65,7 +67,7 @@
 
 (def register-fns-from-namespace (comp register-fns find-fns))
 
-(defn get-fn [name] (@fn-registry name))
+(defn get-fn [name] (@*fn-registry* name))
 
 (defn function->source [name f args]
   (if (:complicated (meta f))

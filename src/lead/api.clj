@@ -17,7 +17,7 @@
     {:status 200
      :body (parse target)})
   (GET "/functions/" []
-    {:status 200 :body (keys @fns/fn-registry)})
+    {:status 200 :body (keys @fns/*fn-registry*)})
   (route/not-found "Not Found"))
 
 (defn wrap-exception [f]
