@@ -1,4 +1,5 @@
-(ns lead.graphite)
+(ns lead.graphite
+  (:require [clj-http.client :as http]))
 
 (defn graphite-json->serieses [targets]
     (map (fn [target]
@@ -11,3 +12,14 @@
                   :name (:target target)
                   :values (map first (:datapoints target))))
          targets))
+
+(defn connector [url]
+  (fn [target from until]
+    (let [url (str url "/render/")
+          response (http/get url {:as :json
+                                  :query-params {"target" target
+                                                 "from" from
+                                                 "until" until
+                                                 "format" "json"}})
+          targets (:body response)]
+      (graphite-json->serieses targets))))

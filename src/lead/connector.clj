@@ -1,7 +1,13 @@
-(ns lead.connector
-  [:require [clj-http.client :as http] [clojure.data.json :as json]])
+(ns lead.connector)
 
-(defn get-metrics [target from until]
-  (let [url (str "http://localhost:5000/render/?target=" target "&from=" from "&until=" until)
-        response (http/get url {:as :json})]
-    (:body response)))
+(def ^:dynamic *connector*)
+
+(defn init-connector [] (atom nil))
+
+(defn set-connector
+  [connector]
+  (reset! *connector* connector))
+
+(defn get-metrics
+  [& args]
+  (apply @*connector* args))
