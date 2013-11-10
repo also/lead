@@ -15,14 +15,14 @@
   (swap! *routes* concat routes))
 
 (defroutes handler
-  (GET "/render/" [target start end]
+  (GET "/render" [target start end]
     (let [result (run (parse target) {:start (Integer/parseInt start) :end (Integer/parseInt end)})]
       {:status 200
        :body result}))
-  (GET "/parse/" [target]
+  (GET "/parse" [target]
     {:status 200
      :body (parse target)})
-  (GET "/functions/" []
+  (GET "/functions" []
     {:status 200 :body (keys @fns/*fn-registry*)}))
 
 (def not-found (route/not-found "Not Found"))
