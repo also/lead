@@ -5,13 +5,30 @@
             :url "http://opensource.org/licenses/MIT"}
   :dependencies [
     [org.clojure/clojure "1.5.1"]
+    [org.clojure/clojurescript "0.0-2030"]
     [org.clojure/math.numeric-tower "0.0.2"]
     [org.clojure/data.json "0.2.2"]
     [instaparse "1.2.8"]
-    [clj-http "0.7.2"]
+    [clj-http "0.7.2" :exclusions [org.clojure/tools.reader]] ; tools.reader version conflicted with clojurescript requirement
     [ring/ring-core "1.1.8"]
     [ring/ring-jetty-adapter "1.1.8"]
     [ring/ring-json "0.2.0"]
     [compojure "1.1.5"]
     [org.clojure/tools.logging "0.2.6"]]
-:aliases {"jetty" ["run" "-m" "lead.jetty-api/run"]})
+  :plugins  [[com.keminglabs/cljx "0.3.1"]
+             [lein-cljsbuild "1.0.0-alpha2"]]
+  :cljx  {:builds  [{:source-paths  ["src/cljx"]
+                     :output-path "target/classes"
+                     :rules :clj}
+                    {:source-paths  ["src/cljx"]
+                     :output-path "target/generated/cljs"
+                     :rules :cljs}]}
+  :hooks  [cljx.hooks]
+  :cljsbuild {
+    :builds  [{:source-paths ["target/generated/cljs"]
+               :compiler  {:optimizations :none
+                           :pretty-print true
+                           :output-dir "target/js"
+                           :output-to "target/js/index.js"
+                           }}]}
+  :aliases {"jetty" ["run" "-m" "lead.jetty-api/run"]})
