@@ -1,9 +1,9 @@
 (ns lead.builtin-functions
   (:require
-    [clojure.math.numeric-tower :as numeric-tower]
+    [lead.math :as math]
     [clojure.string :as string]
     [lead.functions :as fns]
-    [lead.connector :as connector]))
+    #+clj [lead.connector :as connector]))
 
 (defn name->path [name] (string/split name #"\."))
 (defn path->name [path] (string/join "." path))
@@ -42,7 +42,7 @@
     [start, end]))
 
 (defn normalize-serieses [serieses]
-  (let [step                (reduce numeric-tower/lcm (map :step serieses)),
+  (let [step                (reduce math/lcm (map :step serieses)),
         normalized-serieses (map #(assoc % :values-per-point (/ step (:step %))) serieses),
         [start, max-end]    (range-serieses serieses)
         delta               (- max-end start)
@@ -154,6 +154,7 @@
   [serieses factor]
   (map-serieses serieses #(if % (* factor %)) "scale"))
 
+#+clj
 (defn
   ^{:args "s"
     :aliases ["load"]
