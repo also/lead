@@ -16,7 +16,7 @@
     [compojure "1.1.5"]
     [org.clojure/tools.logging "0.2.6"]]
   :plugins  [[com.keminglabs/cljx "0.3.1"]
-             [lein-cljsbuild "1.0.0-alpha2"]]
+             [lein-cljsbuild "1.0.0"]]
   :cljx  {:builds  [{:source-paths  ["src/cljx"]
                      :output-path "target/classes"
                      :rules :clj}
