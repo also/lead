@@ -32,7 +32,7 @@
   [name f & args]
   (try
     (apply apply f args)
-    (catch Throwable t
+    (catch #+clj Throwable #+cljs js/Error t
       (throw (ex-info (str "Error calling " name ": " (.getMessage t)) {:name name :args args} t)))))
 
 (defrecord ComplicatedFunctionCall [name f args]
