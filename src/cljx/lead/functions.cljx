@@ -87,7 +87,7 @@
   (if-let [f (get-fn function)]
     (if (:complicated (meta f))
       (throw (RuntimeException. (str function " can't be used in this context")))
-      (call-f function loaded-args))
+      (call-f function f loaded-args))
     (throw (RuntimeException. (str function " is not a function")))))
 
 (defn build [program] (binding [*ns* (the-ns 'lead.functions)] (eval program)))
