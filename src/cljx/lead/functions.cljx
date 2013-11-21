@@ -28,22 +28,23 @@
                    arg))
        args))
 
+(defn call-f
+  [name f & args]
+  (try
+    (apply apply f args)
+    (catch Throwable t
+      (throw (RuntimeException. (str "Error calling " name ": " (.getMessage t)) t)))))
+
 (defrecord ComplicatedFunctionCall [name f args]
   SeriesSource
   (load-serieses [this opts]
-    (try
-      (apply f opts args)
-      (catch Throwable t
-        (throw (RuntimeException. (str "Error calling " name ": " (.getMessage t)) t))))))
+    (call-f name f opts args)))
 
 (defrecord SimpleFunctionCall [name, f, args]
   SeriesSource
   (load-serieses [this, opts]
     (let [loaded-args (load-args opts (:args this))]
-      (try
-        (apply f loaded-args)
-        (catch Throwable t
-          (throw (RuntimeException. (str "Error calling " name ": " (.getMessage t)) t)))))))
+      (call-f name f args))))
 
 (declare function-call)
 
@@ -86,12 +87,8 @@
   (if-let [f (get-fn function)]
     (if (:complicated (meta f))
       (throw (RuntimeException. (str function " can't be used in this context")))
-      (try
-        (apply f loaded-args)
-        (catch Throwable t
-          (throw (RuntimeException. (str "Error calling " name ": " (.getMessage t)) t)))))
+      (call-f function loaded-args))
     (throw (RuntimeException. (str function " is not a function")))))
-
 
 (defn build [program] (binding [*ns* (the-ns 'lead.functions)] (eval program)))
 (defn run [program opts] (load-serieses (build program) opts))
