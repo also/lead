@@ -31,7 +31,6 @@
                            :output-dir "target/js"
                            :output-to "target/js/index.js"
                            }}]}
-  :aliases {"jetty" ["run" "-m" "lead.jetty-api/run"]}
   ;; need this to work with leiningen 2.3.1 used on travis-ci
   ;; cljx should probably support %s or another way to reference project configuration
   :profiles {:test {:target-path "target"}})
