@@ -5,11 +5,11 @@
 
 (def transforms
   {:string str
-   :metric (fn [& args] (list 'function-call "load" [(apply str args)]))
+   :metric (fn [& args] ["load" [(apply str args)]])
    :func str
    :boolean #(= % [:true])
    :args (fn [& args] (vec args))
-   :call (fn [name args] (list 'function-call name args))
+   :call (fn [name args] [name args])
    :number (comp edn/read-string str)
    :target identity})
 

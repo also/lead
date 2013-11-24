@@ -113,5 +113,10 @@
       (call-f function f loaded-args))
     (throw (ex-info (str function " is not a function") {:name function}))))
 
-(defn build [program] (binding [*ns* (the-ns 'lead.functions)] (eval program)))
+(defn build [program]
+  (if (vector? program)
+    (let [[name args] program]
+      (function-call name (map build args)))
+    program))
+
 (defn run [program opts] (load-serieses (build program) opts))
