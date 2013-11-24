@@ -14,23 +14,35 @@
     [ring/ring-jetty-adapter "1.1.8"]
     [ring/ring-json "0.2.0"]
     [compojure "1.1.5"]
-    [org.clojure/tools.logging "0.2.6"]]
+    [org.clojure/tools.logging "0.2.6"]
+    [com.cemerick/clojurescript.test "0.2.1"]]
   :plugins  [[com.keminglabs/cljx "0.3.1"]
              [lein-cljsbuild "1.0.0"]]
-  :cljx  {:builds  [{:source-paths  ["src/cljx"]
+  :cljx  {:builds  [{:source-paths ["src/cljx"]
                      :output-path "target/classes"
                      :rules :clj}
-                    {:source-paths  ["src/cljx"]
+                    {:source-paths ["src/cljx"]
                      :output-path "target/generated/cljs"
+                     :rules :cljs}
+                    {:source-paths ["test/cljx"]
+                     :output-path "target/test-classes"
+                     :rules :clj}
+                    {:source-paths ["test/cljx"]
+                     :output-path "target/generated/test-cljs"
                      :rules :cljs}]}
   :hooks  [cljx.hooks]
   :cljsbuild {
     :builds  [{:source-paths ["target/generated/cljs" "target/classes"]
-               :compiler  {:optimizations :none
-                           :pretty-print true
-                           :output-dir "target/js"
-                           :output-to "target/js/index.js"
-                           }}]}
+               :compiler {:optimizations :none
+                          :pretty-print true
+                          :output-dir "target/js"
+                          :output-to "target/js/index.js" }}
+              {:source-paths ["target/generated/cljs" "target/classes" "target/generated/test-cljs" "target/test-classes"]
+               :compiler {:optimizations :none
+                          :pretty-print true
+                          :output-dir "target/test-js"
+                          :output-to "target/test-js/index.js"}}]}
   ;; need this to work with leiningen 2.3.1 used on travis-ci
   ;; cljx should probably support %s or another way to reference project configuration
-  :profiles {:test {:target-path "target"}})
+  :profiles {:test {:target-path "target"
+                    :test-paths ["target/test-classes"]}})

@@ -1,4 +1,5 @@
-(ns lead.functions)
+(ns lead.functions
+  #+cljs (:require [clojure.string :as str]))
 
 ; A series has these attributes:
 ;  :values           a list of values
@@ -80,7 +81,8 @@
 #+cljs
 (defn enumerate-namespace
   [namespace]
-  (let [goog-ns (str namespace)]
+  ; TODO maybe replace other chars?
+  (let [goog-ns (str/replace (str namespace) \- \_)]
     (goog/require goog-ns)
     (-> goog-ns goog/getObjectByName js->clj vals)))
 
