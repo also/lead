@@ -4,3 +4,10 @@ jdk:
   - oraclejdk7
   - openjdk7
   - openjdk6
+before_script:
+  - npm install
+  - lein2 cljx
+  - lein2 cljsbuild once
+script:
+  - lein2 test
+  - ./node_modules/coffee-script/bin/coffee test/coffee/run_clojure_tests.coffee
