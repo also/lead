@@ -16,6 +16,11 @@
 ; A simple function just transforms a series list--it wil be called with any series lists already loaded.
 ; A complicated function is responsible calling load-series on it's arguments, so it is able to use or change the options.
 
+
+(defmacro leadfn
+  [& args]
+  `(defn ~@args))
+
 (defprotocol SeriesSource
   (load-serieses [this, opts]))
 
@@ -52,7 +57,13 @@
 
 (defn create-registry [] (atom {}))
 
-(defn fn-names [f] (cons (str (:name (meta f))) (:aliases (meta f))))
+#+cljs
+(defn f-meta [f] (aget f "meta"))
+
+#+clj
+(def f-meta meta)
+
+(defn fn-names [f] (cons (str (:name (f-meta f))) (:aliases (f-meta f))))
 
 (defn register-fns
   "Registers a list of functions by it's aliases."
@@ -60,18 +71,30 @@
   (if (seq fns) (swap! *fn-registry* (partial apply assoc) (flatten
     (map (fn [f] (map (fn [n] [n f]) (fn-names f))) fns)))))
 
+#+clj
+(defn enumerate-namespace
+  [namespace]
+  (require namespace)
+  (vals (ns-publics namespace)))
+
+#+cljs
+(defn enumerate-namespace
+  [namespace]
+  (let [goog-ns (str namespace)]
+    (goog/require goog-ns)
+    (-> goog-ns goog/getObjectByName js->clj vals)))
+
 (defn find-fns
   "Find lead functions in a namespace."
   [namespace]
-  (require namespace)
-  (filter #(:args (meta %)) (vals (ns-publics namespace))))
+  (filter #(:args (f-meta %)) (enumerate-namespace namespace)))
 
 (def register-fns-from-namespace (comp register-fns find-fns))
 
 (defn get-fn [name] (@*fn-registry* name))
 
 (defn function->source [name f args]
-  (if (:complicated (meta f))
+  (if (:complicated (f-meta f))
     (ComplicatedFunctionCall. name f args)
     (SimpleFunctionCall. name f args)))
 
@@ -85,7 +108,7 @@
 
 (defn call-simple-function [function loaded-args]
   (if-let [f (get-fn function)]
-    (if (:complicated (meta f))
+    (if (:complicated (f-meta f))
       (throw (ex-info (str function " can't be used in this context") {:name function}))
       (call-f function f loaded-args))
     (throw (ex-info (str function " is not a function") {:name function}))))

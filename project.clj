@@ -25,7 +25,7 @@
                      :rules :cljs}]}
   :hooks  [cljx.hooks]
   :cljsbuild {
-    :builds  [{:source-paths ["target/generated/cljs"]
+    :builds  [{:source-paths ["target/generated/cljs" "target/classes"]
                :compiler  {:optimizations :none
                            :pretty-print true
                            :output-dir "target/js"

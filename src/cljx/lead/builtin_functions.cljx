@@ -3,7 +3,9 @@
     [lead.math :as math]
     [clojure.string :as string]
     [lead.functions :as fns]
-    #+clj [lead.connector :as connector]))
+    #+clj [lead.connector :as connector])
+  #+cljs (:use-macros [lead.function-macros :only [leadfn]])
+  #+clj (:use [lead.functions :only [leadfn]]))
 
 (defn name->path [name] (string/split name #"\."))
 (defn path->name [path] (string/join "." path))
@@ -97,35 +99,35 @@
   [serieses f name]
   (map #(assoc % :name (str name \( (:name %) \)) :values (map f (:values %))) serieses))
 
-(defn
+(leadfn
   ^{:args "T"
     :aliases ["avg" "averageSeries"]}
   avg-serieses
   [serieses]
   (sliced serieses safe-average, "averageSeries"))
 
-(defn
+(leadfn
   ^{:args "T"
     :aliases ["min" "minSeries"]}
   min-serieses
   [serieses]
   (sliced serieses safe-min, "minSeries"))
 
-(defn
+(leadfn
   ^{:args "T"
     :aliases ["max" "maxSeries"]}
   max-serieses
   [serieses]
   (sliced serieses safe-max, "maxSeries"))
 
-(defn
+(leadfn
   ^{:args "T"
     :aliases ["sum", "sumSeries"]}
   sum-serieses
   [serieses]
   (sliced serieses safe-sum "sumSeries"))
 
-(defn
+(leadfn
   ^{:args "Tis"
     :aliases ["groupByNode"]}
   group-serieses-by-node
@@ -133,21 +135,21 @@
   (let [groups (group-by #(nth (name->path (:name %)) node-num) serieses)]
     (flatten (map #(fns/call-simple-function aggregate [%]) (vals groups)))))
 
-(defn
+(leadfn
   ^{:args "T*"
     :aliases ["flatten" "group"]}
   flatten-serieseses
   [& serieses]
   (flatten serieses))
 
-(defn
+(leadfn
   ^{:args "Ti"
     :aliases ["offset"]}
   increment-serieses
   [serieses amount]
   (map-serieses serieses #(if % (+ amount %)) "offset"))
 
-(defn
+(leadfn
   ^{:args "Ti"
     :aliases ["scale"]}
   scale-serieses
@@ -155,7 +157,7 @@
   (map-serieses serieses #(if % (* factor %)) "scale"))
 
 #+clj
-(defn
+(leadfn
   ^{:args "s"
     :aliases ["load"]
     :complicated true}
@@ -163,7 +165,7 @@
   [{start :start end :end} q]
   (connector/get-metrics q start end))
 
-(defn
+(leadfn
   ^{:args "Ts"
     :aliases ["alias"]}
   rename-serieses
@@ -173,14 +175,14 @@
 (defn replace-serieses-values-with-nil [f serieses name]
   (map-serieses serieses #(if (f %) %) name))
 
-(defn
+(leadfn
   ^{:args "Ti"
     :aliases ["removeBelowValue"]}
   map-values-below-to-nil
   [serieses value]
   (replace-serieses-values-with-nil #(>= % value) serieses "removeBelowValue"))
 
-(defn
+(leadfn
   ^{:args "Ti"
     :aliases ["removeAboveValue"]}
   map-values-above-to-nil
