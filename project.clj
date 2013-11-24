@@ -5,7 +5,7 @@
             :url "http://opensource.org/licenses/MIT"}
   :dependencies [
     [org.clojure/clojure "1.5.1"]
-    [org.clojure/clojurescript "0.0-2030"]
+    [org.clojure/clojurescript "0.0-2080"]
     [org.clojure/math.numeric-tower "0.0.2"]
     [org.clojure/data.json "0.2.2"]
     [instaparse "1.2.8"]
