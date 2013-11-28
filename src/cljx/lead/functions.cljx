@@ -17,7 +17,13 @@
 ; A simple function just transforms a series list--it wil be called with any series lists already loaded.
 ; A complicated function is responsible calling load-series on it's arguments, so it is able to use or change the options.
 
+#+cljs-macro
+(defmacro leadfn
+  [name & body]
+  `(do (def ~name (fn ~@body))
+       (aset ~name "meta" ~(assoc (meta name) :name (str name)))))
 
+#+clj-macro
 (defmacro leadfn
   [& args]
   `(defn ~@args))

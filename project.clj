@@ -20,10 +20,17 @@
              [lein-cljsbuild "1.0.0"]]
   :cljx  {:builds  [{:source-paths ["src/cljx"]
                      :output-path "target/classes"
-                     :rules :clj}
+                     :rules {:filetype "clj"
+                             :features #{"clj-macro" "clj"}
+                             :transforms []}}
                     {:source-paths ["src/cljx"]
                      :output-path "target/generated/cljs"
                      :rules :cljs}
+                    {:source-paths ["src/cljx"]
+                     :output-path "target/generated/clj"
+                     :rules {:filetype "clj"
+                             :features #{"cljs-macro" "clj"}
+                             :transforms []}}
                     {:source-paths ["test/cljx"]
                      :output-path "target/test-classes"
                      :rules :clj}
@@ -32,12 +39,12 @@
                      :rules :cljs}]}
   :hooks  [cljx.hooks]
   :cljsbuild {
-    :builds  [{:source-paths ["target/generated/cljs" "target/classes"]
+    :builds  [{:source-paths ["target/generated/cljs" "target/generated/clj"]
                :compiler {:optimizations :none
                           :pretty-print true
                           :output-dir "target/js"
                           :output-to "target/js/index.js" }}
-              {:source-paths ["target/generated/cljs" "target/classes" "target/generated/test-cljs" "target/test-classes"]
+              {:source-paths ["target/generated/cljs" "target/generated/clj" "target/generated/test-cljs" "target/test-classes"]
                :compiler {:optimizations :none
                           :pretty-print true
                           :output-dir "target/test-js"

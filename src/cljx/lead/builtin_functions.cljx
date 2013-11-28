@@ -4,7 +4,7 @@
     [clojure.string :as string]
     [lead.functions :as fns]
     #+clj [lead.connector :as connector])
-  #+cljs (:use-macros [lead.function-macros :only [leadfn]])
+  #+cljs (:use-macros [lead.functions :only [leadfn]])
   #+clj (:use [lead.functions :only [leadfn]]))
 
 (defn name->path [name] (string/split name #"\."))
