@@ -60,6 +60,6 @@
     (fns/register-fns-from-namespace 'lead.builtin-functions)
     (let [source (fns/->StaticSeriesSource [{:name "", :values  [], :start 1, :end 2, :step 1}])
           fn-source (fns/function-call "removeBelowValue" [source 1])
-          result (fns/load-serieses fn-source {}) ]
+          result (fns/load-serieses fn-source {})]
       (prn fn-source)
       (prn result))))
