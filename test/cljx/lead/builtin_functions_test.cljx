@@ -61,5 +61,4 @@
     (let [source (fns/->StaticSeriesSource [{:name "", :values  [], :start 1, :end 2, :step 1}])
           fn-source (fns/function-call "removeBelowValue" [source 1])
           result (fns/load-serieses fn-source {})]
-      (prn fn-source)
-      (prn result))))
+     (is (= {:name "removeBelowValue()", :values  [], :start 1, :end 2, :step 1} (first result))))))

@@ -60,7 +60,7 @@
   SeriesSource
   (load-serieses [this, opts]
     (let [loaded-args (load-args opts (:args this))]
-      (call-f name f args))))
+      (call-f name f loaded-args))))
 
 (declare function-call)
 
