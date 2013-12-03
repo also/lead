@@ -54,3 +54,12 @@
 
 (deftest test-simplify-serieses-names
   (is (= ["ones" "twos" "threes"] (map :name (bi/simplify-serieses-names [ones twos threes])))))
+
+(deftest test-series-source
+  (binding [fns/*fn-registry* (fns/create-registry)]
+    (fns/register-fns-from-namespace 'lead.builtin-functions)
+    (let [source (fns/->StaticSeriesSource [{:name "", :values  [], :start 1, :end 2, :step 1}])
+          fn-source (fns/function-call "removeBelowValue" [source 1])
+          result (fns/load-serieses fn-source {}) ]
+      (prn fn-source)
+      (prn result))))
