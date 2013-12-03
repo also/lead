@@ -31,6 +31,10 @@
 (defprotocol SeriesSource
   (load-serieses [this, opts]))
 
+(defrecord StaticSeriesSource [serieses]
+  SeriesSource
+  (load-serieses [this opts] serieses))
+
 (defn series-source? [x]
   (satisfies? SeriesSource x))
 
