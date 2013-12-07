@@ -39,17 +39,17 @@
       serieses)))
 
 (defn range-serieses [serieses]
-  (let [start (apply min (map :start serieses)),
+  (let [start (apply min (map :start serieses))
         end   (apply max (map :end serieses))]
-    [start, end]))
+    [start end]))
 
 (defn normalize-serieses [serieses]
-  (let [step                (reduce math/lcm (map :step serieses)),
-        normalized-serieses (map #(assoc % :values-per-point (/ step (:step %))) serieses),
-        [start, max-end]    (range-serieses serieses)
+  (let [step                (reduce math/lcm (map :step serieses))
+        normalized-serieses (map #(assoc % :values-per-point (/ step (:step %))) serieses)
+        [start max-end]     (range-serieses serieses)
         delta               (- max-end start)
         end                 (if (= 0 delta) 0 (- max-end (mod delta step)))]
-    [normalized-serieses, start, end, step]))
+    [normalized-serieses start end step]))
 
 (defn non-nil [values] (keep identity values))
 
@@ -75,7 +75,7 @@
 ; could we call this resampling?
 (defn consolidate-values
   "Consolidates groups of values-per-point values using consolidation-fn"
-  [values, consolidation-fn, values-per-point]
+  [values consolidation-fn values-per-point]
   (map consolidation-fn (partition-all values-per-point values)))
 
 (defn consolidate-series-values [series]
@@ -83,13 +83,13 @@
     (if (= 1 values-per-point)
       (:values series)
       (let [consolidation-fn (get series :consolidation-fn safe-average)]
-        (consolidate-values (:values series) consolidation-fn, values-per-point)))))
+        (consolidate-values (:values series) consolidation-fn values-per-point)))))
 
 (defn sliced
   "Creates a new series by calling f for each time-slice of serieses"
-  [serieses f, name]
+  [serieses f name]
   (when (seq serieses)
-    (let [[normalized-serieses, start, end, step] (normalize-serieses serieses)
+    (let [[normalized-serieses start end step] (normalize-serieses serieses)
            consolidated-values (map consolidate-series-values normalized-serieses)
            values (apply map (fn [& values] (f values)) consolidated-values)]
       [{:start start, :end end, :step step, :values values, :name (str name \( (string/join ", " (map :name serieses)) \))}])))
@@ -104,25 +104,25 @@
     :aliases ["avg" "averageSeries"]}
   avg-serieses
   [serieses]
-  (sliced serieses safe-average, "averageSeries"))
+  (sliced serieses safe-average "averageSeries"))
 
 (leadfn
   ^{:args "T"
     :aliases ["min" "minSeries"]}
   min-serieses
   [serieses]
-  (sliced serieses safe-min, "minSeries"))
+  (sliced serieses safe-min "minSeries"))
 
 (leadfn
   ^{:args "T"
     :aliases ["max" "maxSeries"]}
   max-serieses
   [serieses]
-  (sliced serieses safe-max, "maxSeries"))
+  (sliced serieses safe-max "maxSeries"))
 
 (leadfn
   ^{:args "T"
-    :aliases ["sum", "sumSeries"]}
+    :aliases ["sum" "sumSeries"]}
   sum-serieses
   [serieses]
   (sliced serieses safe-sum "sumSeries"))
