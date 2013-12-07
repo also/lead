@@ -1,5 +1,22 @@
 (ns lead.series)
 
+; A series has these attributes:
+;  :values           a list of values
+;  :start            the timestamp of the first value
+;  :end              the timestamp of the last value
+;  :step             the number of seconds per value
+;
+;  :consolidation-fn the function used to consolidate the values for aggregation with other series or display
+;  :values-per-point the number of values for each consolidated point
+;
+; Options
+;  :start
+;  :end
+;
+; A simple function just transforms a series list--it wil be called with any series lists already loaded.
+; A complicated function is responsible calling load-series on it's arguments, so it is able to use or change the options.
+
+
 (defprotocol TimeSeries
   (slice [this start end]))
 
