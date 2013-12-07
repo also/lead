@@ -10,4 +10,4 @@ before_script:
   - lein2 cljsbuild once
 script:
   - lein2 test
-  - ./node_modules/coffee-script/bin/coffee test/coffee/run_clojure_tests.coffee
+  - lein2 cljsbuild test

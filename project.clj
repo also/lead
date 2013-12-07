@@ -47,7 +47,9 @@
                         :compiler {:optimizations :none
                                    :pretty-print true
                                    :output-dir "target/test-js"
-                                   :output-to "target/test-js/index.js"}}]}
+                                   :output-to "target/test-js/index.js"}}]
+              :test-commands {"node" ["./node_modules/coffee-script/bin/coffee" "test/coffee/run_clojure_tests.coffee"]}
+              }
   ;; need this to work with leiningen 2.3.1 used on travis-ci
   ;; cljx should probably support %s or another way to reference project configuration
   :profiles {:test {:target-path "target"
