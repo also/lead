@@ -30,11 +30,9 @@
   (fn [request]
     (try (f request)
       (catch Exception e
-        (let [sw (java.io.StringWriter.)]
-          (warn e "Excption handling request")
-          (.printStackTrace e (java.io.PrintWriter. sw))
-          {:status 500
-          :body {:exception (str sw)}})))))
+        (warn e "Excption handling request")
+        {:status 500
+         :body {:exception (.getMessage e) :details (ex-data e)}}))))
 
 (defn create-handler
   []
