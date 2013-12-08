@@ -6,7 +6,7 @@
     "url": "https://github.com/also/lead"
   },
   "dependencies": {
-    "oog": "0.1.1"
+    "oog": "~0.1.8"
   },
   "devDependencies": {
     "coffee-script": "~1.6.3"
