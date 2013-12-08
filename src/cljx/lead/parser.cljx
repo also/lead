@@ -26,5 +26,8 @@
 (defn parse [s]
   (let [result (parser s)]
     (if (insta/failure? result)
-      (throw (ex-info "Failed to parse" result))
+      (throw (ex-info "Failed to parse" {:message (with-out-str  (fail/pprint-failure result))
+                                         :index (:index result)
+                                         :column (:column result)
+                                         :line (:line result)}))
       (insta/transform transforms result))))
