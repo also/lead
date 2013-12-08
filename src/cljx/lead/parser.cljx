@@ -26,5 +26,5 @@
 (defn parse [s]
   (let [result (parser s)]
     (if (insta/failure? result)
-      (throw (RuntimeException. (with-out-str (fail/pprint-failure result))))
+      (throw (ex-info "Failed to parse" result))
       (insta/transform transforms result))))
