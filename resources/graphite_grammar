@@ -30,10 +30,10 @@ number = sci-number / float-number / int-number
 
 <arg> = boolean / number / string / expression
 
-func = #'(?i)[a-z_]' #'(?i)[a-z0-9_]'*
+func = #'[a-zA-Z_]' #'[a-zA-Z0-9_]'*
 args = (arg (<','> sp arg)*)?
 call = func <'('> args <')'>
 
-<metric-char> = #'(?i)[a-z0-9!#$%&"\'*+.:;<=>?@\[\\\]^_`|~-]'
+<metric-char> = #'[a-zA-Z0-9!#$%&"\'*+.:;<=>?@\[\\\]^_`|~-]'
 <metric-group> = '{' (metric-char / ',')+ '}'
 metric = (metric-char / metric-group)+

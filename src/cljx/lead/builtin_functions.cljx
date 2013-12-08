@@ -1,9 +1,11 @@
 (ns lead.builtin-functions
   (:require
-    [clojure.math.numeric-tower :as numeric-tower]
+    [lead.math :as math]
     [clojure.string :as string]
     [lead.functions :as fns]
-    [lead.connector :as connector]))
+    #+clj [lead.connector :as connector])
+  #+cljs (:require-macros [lead.functions :refer [leadfn]])
+  #+clj (:require [lead.functions :refer [leadfn]]))
 
 (defn name->path [name] (string/split name #"\."))
 (defn path->name [path] (string/join "." path))
@@ -37,17 +39,17 @@
       serieses)))
 
 (defn range-serieses [serieses]
-  (let [start (apply min (map :start serieses)),
+  (let [start (apply min (map :start serieses))
         end   (apply max (map :end serieses))]
-    [start, end]))
+    [start end]))
 
 (defn normalize-serieses [serieses]
-  (let [step                (reduce numeric-tower/lcm (map :step serieses)),
-        normalized-serieses (map #(assoc % :values-per-point (/ step (:step %))) serieses),
-        [start, max-end]    (range-serieses serieses)
+  (let [step                (reduce math/lcm (map :step serieses))
+        normalized-serieses (map #(assoc % :values-per-point (/ step (:step %))) serieses)
+        [start max-end]     (range-serieses serieses)
         delta               (- max-end start)
         end                 (if (= 0 delta) 0 (- max-end (mod delta step)))]
-    [normalized-serieses, start, end, step]))
+    [normalized-serieses start end step]))
 
 (defn non-nil [values] (keep identity values))
 
@@ -73,7 +75,7 @@
 ; could we call this resampling?
 (defn consolidate-values
   "Consolidates groups of values-per-point values using consolidation-fn"
-  [values, consolidation-fn, values-per-point]
+  [values consolidation-fn values-per-point]
   (map consolidation-fn (partition-all values-per-point values)))
 
 (defn consolidate-series-values [series]
@@ -81,13 +83,13 @@
     (if (= 1 values-per-point)
       (:values series)
       (let [consolidation-fn (get series :consolidation-fn safe-average)]
-        (consolidate-values (:values series) consolidation-fn, values-per-point)))))
+        (consolidate-values (:values series) consolidation-fn values-per-point)))))
 
 (defn sliced
   "Creates a new series by calling f for each time-slice of serieses"
-  [serieses f, name]
+  [serieses f name]
   (when (seq serieses)
-    (let [[normalized-serieses, start, end, step] (normalize-serieses serieses)
+    (let [[normalized-serieses start end step] (normalize-serieses serieses)
            consolidated-values (map consolidate-series-values normalized-serieses)
            values (apply map (fn [& values] (f values)) consolidated-values)]
       [{:start start, :end end, :step step, :values values, :name (str name \( (string/join ", " (map :name serieses)) \))}])))
@@ -97,35 +99,35 @@
   [serieses f name]
   (map #(assoc % :name (str name \( (:name %) \)) :values (map f (:values %))) serieses))
 
-(defn
+(leadfn
   ^{:args "T"
     :aliases ["avg" "averageSeries"]}
   avg-serieses
   [serieses]
-  (sliced serieses safe-average, "averageSeries"))
+  (sliced serieses safe-average "averageSeries"))
 
-(defn
+(leadfn
   ^{:args "T"
     :aliases ["min" "minSeries"]}
   min-serieses
   [serieses]
-  (sliced serieses safe-min, "minSeries"))
+  (sliced serieses safe-min "minSeries"))
 
-(defn
+(leadfn
   ^{:args "T"
     :aliases ["max" "maxSeries"]}
   max-serieses
   [serieses]
-  (sliced serieses safe-max, "maxSeries"))
+  (sliced serieses safe-max "maxSeries"))
 
-(defn
+(leadfn
   ^{:args "T"
-    :aliases ["sum", "sumSeries"]}
+    :aliases ["sum" "sumSeries"]}
   sum-serieses
   [serieses]
   (sliced serieses safe-sum "sumSeries"))
 
-(defn
+(leadfn
   ^{:args "Tis"
     :aliases ["groupByNode"]}
   group-serieses-by-node
@@ -133,28 +135,29 @@
   (let [groups (group-by #(nth (name->path (:name %)) node-num) serieses)]
     (flatten (map #(fns/call-simple-function aggregate [%]) (vals groups)))))
 
-(defn
+(leadfn
   ^{:args "T*"
     :aliases ["flatten" "group"]}
   flatten-serieseses
   [& serieses]
   (flatten serieses))
 
-(defn
+(leadfn
   ^{:args "Ti"
     :aliases ["offset"]}
   increment-serieses
   [serieses amount]
   (map-serieses serieses #(if % (+ amount %)) "offset"))
 
-(defn
+(leadfn
   ^{:args "Ti"
     :aliases ["scale"]}
   scale-serieses
   [serieses factor]
   (map-serieses serieses #(if % (* factor %)) "scale"))
 
-(defn
+#+clj
+(leadfn
   ^{:args "s"
     :aliases ["load"]
     :complicated true}
@@ -162,7 +165,7 @@
   [{start :start end :end} q]
   (connector/get-metrics q start end))
 
-(defn
+(leadfn
   ^{:args "Ts"
     :aliases ["alias"]}
   rename-serieses
@@ -172,14 +175,14 @@
 (defn replace-serieses-values-with-nil [f serieses name]
   (map-serieses serieses #(if (f %) %) name))
 
-(defn
+(leadfn
   ^{:args "Ti"
     :aliases ["removeBelowValue"]}
   map-values-below-to-nil
   [serieses value]
   (replace-serieses-values-with-nil #(>= % value) serieses "removeBelowValue"))
 
-(defn
+(leadfn
   ^{:args "Ti"
     :aliases ["removeAboveValue"]}
   map-values-above-to-nil
