@@ -4,8 +4,8 @@
     [clojure.string :as string]
     [lead.functions :as fns]
     #+clj [lead.connector :as connector])
-  #+cljs (:use-macros [lead.functions :only [leadfn]])
-  #+clj (:use [lead.functions :only [leadfn]]))
+  #+cljs (:require-macros [lead.functions :refer [leadfn]])
+  #+clj (:require [lead.functions :refer [leadfn]]))
 
 (defn name->path [name] (string/split name #"\."))
 (defn path->name [path] (string/join "." path))

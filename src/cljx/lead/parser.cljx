@@ -4,7 +4,7 @@
             [#+clj clojure.edn #+cljs cljs.reader :refer [read-string]]
             [instaparse.failure :as fail])
   #+cljs
-  (:use-macros [lead.parser :only [load-parser]]))
+  (:require-macros [lead.parser :refer [load-parser]]))
 
 (def transforms
   {:string str

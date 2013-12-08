@@ -1,6 +1,6 @@
 (ns lead.builtin-functions-test
   #+clj
-  (:use clojure.test)
+  (:require [clojure.test :refer [deftest is]])
   #+cljs
   (:require-macros [cemerick.cljs.test :refer [deftest is]])
   (:require [lead.functions :as fns]
