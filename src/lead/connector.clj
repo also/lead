@@ -4,10 +4,10 @@
 
 (defn init-connector [] (atom nil))
 
+(defprotocol Connector
+  (query [this pattern])
+  (load-serieses [this targets opts]))
+
 (defn set-connector
   [connector]
   (reset! *connector* connector))
-
-(defn get-metrics
-  [& args]
-  (apply @*connector* args))

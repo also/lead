@@ -162,8 +162,8 @@
     :aliases ["load"]
     :complicated true}
   load-from-connector
-  [{start :start end :end} q]
-  (connector/get-metrics q start end))
+  [opts target]
+  (connector/load-serieses @connector/*connector* [target] opts))
 
 (leadfn
   ^{:args "Ts"

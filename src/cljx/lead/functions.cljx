@@ -13,7 +13,7 @@
   `(defn ~@args))
 
 (defprotocol SeriesSource
-  (load-serieses [this, opts]))
+  (load-serieses [this opts]))
 
 (defrecord StaticSeriesSource [serieses]
   SeriesSource
