@@ -9,8 +9,8 @@
     [org.clojure/math.numeric-tower "0.0.2"]
     [org.clojure/data.json "0.2.2"]
     [clj-http "0.7.2" :exclusions [org.clojure/tools.reader]] ; tools.reader version conflicted with clojurescript requirement
-    [ring/ring-core "1.1.8"]
-    [ring/ring-jetty-adapter "1.1.8"]
+    [ring/ring-core "1.2.1"]
+    [ring/ring-jetty-adapter "1.2.1"]
     [ring/ring-json "0.2.0"]
     [compojure "1.1.5"]
     [instaparse "1.2.8"]
