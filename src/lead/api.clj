@@ -6,7 +6,8 @@
         compojure.core
         clojure.tools.logging)
   (:require [compojure.route :as route]
-            [lead.functions :as fns]))
+            [lead.functions :as fns]
+            [lead.connector :as conn]))
 
 (def ^:dynamic *routes*)
 (defn create-routes [] (atom []))
@@ -15,6 +16,10 @@
   (swap! *routes* concat routes))
 
 (defroutes handler
+  (GET "/find" [query]
+       (let [results (conn/query @conn/*connector* query)]
+         {:status 200
+          :body results}))
   (GET "/render" [target start end]
     (let [result (run (parse target) {:start (Integer/parseInt start) :end (Integer/parseInt end)})]
       {:status 200
