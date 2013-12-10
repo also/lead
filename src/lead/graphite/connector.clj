@@ -1,4 +1,4 @@
-(ns lead.graphite
+(ns lead.graphite.connector
   (:require [clj-http.client :as http]
             [lead.connector :refer [Connector]]))
 
@@ -21,6 +21,10 @@
           response (http/get url {:as :json
                                   :query-params {"query" pattern
                                                  "format" "completer"}})]
+
+      ; TODO "completer" is the closest format to what we need, but it tacks on
+      ; "*" to the end of every query: https://github.com/graphite-project/graphite-web/blob/0.9.12/webapp/graphite/metrics/views.py#L157-L158
+      ; we should filter the results on the last path segment
       (map (fn [result]
              {:name (let [name (:path result)]
                       (if (.endsWith name ".")
