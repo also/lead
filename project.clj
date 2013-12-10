@@ -9,7 +9,10 @@
     [org.clojure/math.numeric-tower "0.0.2"]
     [org.clojure/data.json "0.2.2"]
     [clj-http "0.7.2" :exclusions [org.clojure/tools.reader]] ; tools.reader version conflicted with clojurescript requirement
-    [ring/ring-core "1.2.1"]
+    ; TODO i have absolutely no idea why the excelusion below is ncessary. tools.reader
+    ; isn't shown as a dependency of ring-core, but without it, the old version of tools.reader shows up on the classpath
+    ; when using lein-cljsbuild. https://github.com/emezeske/lein-cljsbuild/issues/268 might be related
+    [ring/ring-core "1.2.1" :exclusions [org.clojure/tools.reader]]
     [ring/ring-jetty-adapter "1.2.1"]
     [ring/ring-json "0.2.0"]
     [compojure "1.1.5"]
