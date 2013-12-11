@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/also/lead.png?branch=master)](https://travis-ci.org/also/lead)
 
-Lead is a Graphite replacement (or enhancement!). Acting as a Graphite client or server, it can integrate all your sources of time-series data.
+Lead ~~is~~ will be a Graphite replacement (or enhancement!). Acting as a Graphite client or server, it can integrate all your sources of time-series data.
 
 Graphite provides a rich set of functions to apply to time series, but couples this to a primitive user interface and storage engine. Lead aims to replace all three.
 
