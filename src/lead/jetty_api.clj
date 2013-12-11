@@ -3,5 +3,5 @@
             [lead.api :as api]
             [lead.functions :as fns]))
 
-(defn run [port]
-  (jetty/run-jetty (bound-fn* (api/create-handler)) {:port port}))
+(defn run [port handler]
+  (jetty/run-jetty (bound-fn* handler) {:port port}))

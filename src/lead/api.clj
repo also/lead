@@ -7,7 +7,8 @@
         clojure.tools.logging)
   (:require [compojure.route :as route]
             [lead.functions :as fns]
-            [lead.connector :as conn]))
+            [lead.connector :as conn]
+            [clojure.string :as string]))
 
 (def ^:dynamic *routes*)
 (defn create-routes [] (atom []))
@@ -46,3 +47,17 @@
     wrap-exception
     wrap-json-response
     wrap-params))
+
+(defn wrap-uri-prefix [handler prefix]
+  (fn [request]
+    (let [response (handler (assoc request
+                              :uri (string/replace-first (:uri request)
+                                                         (re-pattern (str "^" prefix "/?"))
+                                                         "/")))]
+      (if (<= 300 (:status response) 308)
+        (assoc response
+          :headers (assoc (:headers response)
+                     "Location" (string/replace-first (get-in response [:headers "Location"])
+                                                      #"^/"
+                                                      (str prefix "/"))))
+        response))))
