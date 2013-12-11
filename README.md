@@ -10,6 +10,8 @@ If you're already invested in Graphite, you can use [lead-graphite-server](https
 
 If you're happy with Graphite's Carbon data storage, you can use Lead's implementation of the Graphite functions, while using one of the many existing Graphite UI alternatives, including [lead.js](https://github.com/also/lead.js/blob/master/docs/quickstart.md), a console for exploring Graphite data.
 
+![I'm sure this diagram will answer all your questions](doc/diagram.png)
+
 ## Installation and Configuration
 
 ```clojure
