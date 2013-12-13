@@ -20,7 +20,8 @@
     [org.clojure/tools.logging "0.2.6"]
     [com.cemerick/clojurescript.test "0.2.1"]]
   :main ^:skip-aot lead.main
-  :plugins [[com.keminglabs/cljx "0.3.1"]]
+  :plugins [[com.keminglabs/cljx "0.3.1"]
+            [codox "0.6.6"]]
   :cljx {:builds [{:source-paths ["src/cljx"]
                    :output-path "target/classes"
                    :rules {:filetype "clj"
