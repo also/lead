@@ -29,3 +29,15 @@
                        (recur (conj res \[ prefix inside \]) (inc close)))))
               (recur (conj res (Pattern/quote (str c))) i)))
           res)))))
+
+(defn pattern-segment-to-regexes
+  "https://github.com/graphite-project/graphite-web/blob/0.9.12/webapp/graphite/storage.py#L231"
+  [segment]
+  (let [p1 (.indexOf segment (int \{))
+        p2 (.indexOf segment (int \})) ]
+    (if (< 0 p1 p2)
+      (let [prefix (.substring segment 0 p1)
+            suffix (.substring segment (inc p2))
+            variations (string/split (.substring segment (inc p1) p2) #"\,")]
+        (map #(re-pattern (str \^ (fnmatch-pattern-to-regex (str prefix % suffix)) \$)) variations))
+      [(re-pattern (str \^(fnmatch-pattern-to-regex segment) \$))])))
