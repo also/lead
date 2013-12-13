@@ -1,4 +1,5 @@
-(ns lead.connector)
+(ns lead.connector
+  (:require [lead.functions :as functions]))
 
 (def ^:dynamic *connector*)
 
@@ -18,7 +19,13 @@
     (set (flatten (pmap #(query % pattern) (:connectors this)))))
 
   (load-serieses [this targets opts]
-    (flatten (pmap #(load-serieses % targets opts) (:connectors this)))))
+    (flatten (pmap (fn [connector]
+                     (try
+                       (load-serieses connector targets opts)
+                       (catch Exception ex
+                         (functions/exception ex)
+                         [])))
+                   (:connectors this)))))
 
 (defn connector-list
   [& connectors]
