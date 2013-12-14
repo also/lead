@@ -3,7 +3,7 @@
            (com.google.common.base Charsets)
            (java.util Collections))
   (:require [clj-http.client :as http]
-            [lead.connector :refer [Connector]]))
+            [lead.connector :refer [Connector query load-serieses connector-list]]))
 
 (defn graphite-json->serieses [targets]
     (map (fn [target]
@@ -46,6 +46,9 @@
           targets (:body response)]
       (graphite-json->serieses targets))))
 
+; https://github.com/graphite-project/carbon/blob/0.9.12/lib/carbon/hashing.py
+; https://github.com/graphite-project/carbon/blob/0.9.12/lib/carbon/routers.py
+
 (defn connector [url] (->GraphiteConnector url))
 
 (def md5 (Hashing/md5))
@@ -56,14 +59,13 @@
 (defn- create-builder
   [replicas] {:replicas replicas, :entries ()})
 
-(defn- node-string [[host instance]]
-  (format "('%s', '%s')" host instance))
+(defn- key-string [[host instance] i]
+  (format "('%s', '%s'):%d" host instance i))
 
-; node is [host instance]
 (defn- add-node [builder node]
   (assoc builder :entries
                  (reduce (fn [entries i]
-                           (let [key (str (node-string node) \: i)
+                           (let [key (key-string node i)
                                  position (compute-ring-position key)]
                              (conj entries [position node])))
                          (:entries builder)
@@ -83,3 +85,23 @@
         entry [position nil]
         result-position (mod (- (- (Collections/binarySearch entries entry)) 1) (count entries))]
     (second (nth entries result-position))))
+
+(defrecord ConsistentHashedGraphiteConnector [wrapped node ring]
+  Connector
+  (query [this pattern] (query (:wrapped this) pattern))
+  (load-serieses [this targets opts]
+    (let [node (:node this)
+          ring (:ring this)
+          matching-serieses (filter #(= node (get-node % ring)) targets)]
+      (if (seq matching-serieses)
+        (load-serieses (:wrapped this) matching-serieses opts)
+        ()))))
+
+(defn consistent-hashing-cluster [replicas & host-specs]
+  (let [ring (create-ring replicas (map :node host-specs))
+        connectors (map #(->ConsistentHashedGraphiteConnector
+                          (connector (:url %))
+                          (:node %)
+                          ring)
+                        host-specs)]
+    (apply connector-list connectors)))
