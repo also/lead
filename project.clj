@@ -18,7 +18,8 @@
     [compojure "1.1.5"]
     [instaparse "1.2.8"]
     [org.clojure/tools.logging "0.2.6"]
-    [com.cemerick/clojurescript.test "0.2.1"]]
+    [com.cemerick/clojurescript.test "0.2.1"]
+    [com.google.guava/guava "15.0"]]
   :main ^:skip-aot lead.main
   :plugins [[com.keminglabs/cljx "0.3.1"]
             [codox "0.6.6"]]
