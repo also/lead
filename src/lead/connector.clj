@@ -16,7 +16,7 @@
 (defrecord ConnectorList [connectors]
   Connector
   (query [this pattern]
-    (set (flatten (pmap #(query % pattern) (:connectors this)))))
+    (distinct (flatten (pmap #(query % pattern) (:connectors this)))))
 
   (load-serieses [this targets opts]
     (flatten (pmap (fn [connector]
