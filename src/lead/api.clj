@@ -40,12 +40,22 @@
         {:status 500
          :body {:exception (.getMessage e) :details (ex-data e)}}))))
 
+(defn wrap-cors [handler]
+  (fn [request]
+    (let [response (handler request)]
+      (update-in response [:headers]
+                 (fn [headers]
+                   (assoc headers
+                          "Access-Control-Allow-Origin" "*"
+                          "Access-Control-Allow-Headers" (get (:headers request) "access-control-request-headers" "")))))))
+
 (defn create-handler
   []
   (->
     (routes handler (apply routes @*routes*) not-found)
     wrap-exception
     wrap-json-response
+    wrap-cors
     wrap-params))
 
 (defn wrap-uri-prefix [handler prefix]
