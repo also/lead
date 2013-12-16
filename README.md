@@ -18,6 +18,8 @@ If you're happy with Graphite's Carbon data storage, you can use Lead's implemen
 ; TODO
 ```
 
+See [Configuration](doc/configuration.md) for a list of options.
+
 ## Extending
 
 ```clojure
