@@ -1,6 +1,7 @@
 (ns lead.series
   (:require
-    [lead.math :as math]))
+    [lead.math :as math]
+    [clojure.string :as string]))
 
 ; A series has these attributes:
 ;  :values           a list of values
@@ -47,6 +48,9 @@
   (slice
     [this start end]
     (-> this (slice-series-start start) (slice-series-end end))))
+
+(defn name->path [name] (string/split name #"\."))
+(defn path->name [path] (string/join "." path))
 
 (defn non-nil [values] (keep identity values))
 

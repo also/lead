@@ -8,13 +8,12 @@
                          safe-average
                          safe-sum
                          safe-min
-                         safe-max]]
+                         safe-max
+                         name->path
+                         path->name]]
     #+clj [lead.connector :as connector])
   #+cljs (:require-macros [lead.functions :refer [leadfn]])
   #+clj (:require [lead.functions :refer [leadfn]]))
-
-(defn name->path [name] (string/split name #"\."))
-(defn path->name [path] (string/join "." path))
 
 (defn
   same-depth?
