@@ -8,7 +8,7 @@
   (let [n (.length pattern)
         any-char "."]
     (string/join
-      (loop [res []
+      (loop [res ["(?s)"] ; (?s) -> Dot matches all (including newline)
              i 0]
         (if (< i n)
           (let [c (.charAt pattern i)
