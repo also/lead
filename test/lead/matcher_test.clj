@@ -26,3 +26,26 @@
   (is (not (fnmatch "\nfoo" "foo*")))
   (is (fnmatch "\n" "*")))
 
+(deftest test-segment-matches
+  (is (segment-matches "a" "a"))
+  (is (segment-matches "a{" "a{"))
+  (is (segment-matches "a}" "a}"))
+  (is (not (segment-matches "a" "ab")))
+  (is (not (segment-matches "ab" "a")))
+  (is (segment-matches "a" "a{}"))
+  (is (segment-matches "a" "{a}"))
+  (is (segment-matches "a" "{}a"))
+  (is (segment-matches "{a" "{a"))
+  (is (segment-matches "}a" "}a"))
+  (is (segment-matches "ba" "{b}a"))
+  (is (segment-matches "ba" "{b,c}a"))
+  ; (is (segment-matches "a" "{b,}a")) ; TODO ?
+  (is (segment-matches "ab" "a{b}"))
+  (is (segment-matches "ab" "a{b,c}"))
+  (is (segment-matches "ace" "a{b,c}[de]"))
+  ; (is (segment-matches "ab" "a{b,c}[]")) ; TODO wat
+  (is (segment-matches "ab{d}" "a{b,c}{d}"))
+  (is (segment-matches "adeg" "a{b,[cd]}[ef]g"))
+  (is (segment-matches "ace" "a[{b,c}]e"))
+  (is (segment-matches "a{}b" "a{{}}b"))
+  (is (segment-matches "a{b}c" "a{{}b}c")))
