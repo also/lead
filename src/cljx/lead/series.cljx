@@ -1,5 +1,5 @@
 (ns lead.series
-  (require
+  (:require
     [lead.math :as math]))
 
 ; A series has these attributes:
