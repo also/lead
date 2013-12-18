@@ -1,6 +1,9 @@
 (ns lead.functions
   #+cljs (:require [clojure.string :as str]))
 
+; A simple function just transforms a series list--it wil be called with any series lists already loaded.
+; A complicated function is responsible calling load-series on it's arguments, so it is able to use or change the options.
+
 #+cljs-macro
 (defmacro leadfn
   [name & body]

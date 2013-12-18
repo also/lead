@@ -3,7 +3,12 @@
     [lead.math :as math]
     [clojure.string :as string]
     [lead.functions :as fns]
-    [lead.series :refer :all]
+    [lead.series :refer [consolidate-series-values
+                         normalize-serieses
+                         safe-average
+                         safe-sum
+                         safe-min
+                         safe-max]]
     #+clj [lead.connector :as connector])
   #+cljs (:require-macros [lead.functions :refer [leadfn]])
   #+clj (:require [lead.functions :refer [leadfn]]))

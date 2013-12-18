@@ -14,9 +14,6 @@
 ; Options
 ;  :start
 ;  :end
-;
-; A simple function just transforms a series list--it wil be called with any series lists already loaded.
-; A complicated function is responsible calling load-series on it's arguments, so it is able to use or change the options.
 
 
 (defprotocol TimeSeries
@@ -73,6 +70,7 @@
 (def safe-sum (safe-apply +))
 
 (defn range-serieses [serieses]
+  "Calculate the range covered by all series"
   (let [start (apply min (map :start serieses))
         end   (apply max (map :end serieses))]
     [start end]))
