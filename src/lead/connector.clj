@@ -18,7 +18,7 @@
 (defrecord ConnectorList [connectors]
   Connector
   (query [this pattern]
-    (distinct (flatten (pmap #(query % pattern) (:connectors this)))))
+    (distinct (flatten (pmap #(query % pattern) connectors))))
 
   (load-serieses [this targets opts]
     (flatten (pmap (fn [connector]
@@ -27,7 +27,7 @@
                        (catch Exception ex
                          (functions/exception ex)
                          [])))
-                   (:connectors this)))))
+                   connectors))))
 
 (defn connector-list
   [& connectors]
@@ -53,7 +53,7 @@
         (let [unprefixed-pattern (drop-prefix pattern-path path-prefix)]
           (if (seq unprefixed-pattern)
             (map #(update-in % [:name] add-prefix path-prefix)
-                 (query (:connector this) (series/path->name unprefixed-pattern)))
+                 (query connector (series/path->name unprefixed-pattern)))
             [{:name (series/path->name path-prefix)
               :is-leaf false}]))
         ())))
@@ -66,7 +66,7 @@
                                    (series/path->name (drop-prefix target-path path-prefix)))))
                              prefixed-targets))]
       (map #(update-in % [:name] add-prefix path-prefix)
-           (load-serieses (:connector this) targets opts)))))
+           (load-serieses connector targets opts)))))
 
 (defn prefixed-connector
   [prefix connector]

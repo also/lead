@@ -46,7 +46,7 @@
 (defrecord SimpleFunctionCall [name f args]
   SeriesSource
   (load-serieses [this opts]
-    (let [loaded-args (load-args opts (:args this))]
+    (let [loaded-args (load-args opts args)]
       (call-f name f loaded-args))))
 
 (declare function-call)

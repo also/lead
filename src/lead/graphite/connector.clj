@@ -36,14 +36,14 @@
 (defrecord GraphiteConnector [url]
   Connector
   (query [this pattern]
-    (let [url (str (:url this) "/metrics/find")
+    (let [url (str url "/metrics/find")
           response (http/get url {:as :json
                                   :query-params {"query" pattern
                                                  "format" "completer"}})]
       (transform-find-response pattern (:body response))))
 
   (load-serieses [this targets {:keys [start end]}]
-    (let [url (str (:url this) "/render/")
+    (let [url (str url "/render/")
           response (http/get url {:as :json
                                   :query-params {"target" targets
                                                  "from" start
@@ -94,13 +94,11 @@
 
 (defrecord ConsistentHashedGraphiteConnector [wrapped node ring]
   Connector
-  (query [this pattern] (query (:wrapped this) pattern))
+  (query [this pattern] (query wrapped pattern))
   (load-serieses [this targets opts]
-    (let [node (:node this)
-          ring (:ring this)
-          matching-serieses (filter #(= node (get-node % ring)) targets)]
+    (let [matching-serieses (filter #(= node (get-node % ring)) targets)]
       (if (seq matching-serieses)
-        (load-serieses (:wrapped this) matching-serieses opts)
+        (load-serieses wrapped matching-serieses opts)
         ()))))
 
 (defn consistent-hashing-cluster [replicas & host-specs]
