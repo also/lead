@@ -5,10 +5,10 @@
         ring.middleware.json
         compojure.core
         clojure.tools.logging)
-  (:import [org.joda.time LocalDateTime DateTimeZone])
   (:require [compojure.route :as route]
             [lead.functions :as fns]
             [lead.connector :as conn]
+            [lead.time :as time]
             [clojure.string :as string]))
 
 (def ^:dynamic *routes*)
@@ -17,22 +17,19 @@
   [& routes]
   (swap! *routes* concat routes))
 
-(defn Partial->lead-time [partial]
-  (-> partial (.toDateTime DateTimeZone/UTC) .getMillis (quot 1000)))
-
 (defn parse-request [params]
-  (let [now (LocalDateTime. DateTimeZone/UTC)
+  (let [now (time/now)
         start-param (params "start" (params "from"))
         end-param (params "end" (params "until"))
         start (if start-param
-                (Integer/parseInt start-param)
-                (-> now (.minusDays 1) Partial->lead-time))
+                (time/parse-time start-param now)
+                (.minusDays now 1))
         end (if end-param
-              (Integer/parseInt end-param)
-              (-> now Partial->lead-time))]
-    {:now (Partial->lead-time now)
-     :start start
-     :end end}))
+              (time/parse-time end-param now)
+              now)]
+    {:now   (time/DateTime->seconds now)
+     :start (time/DateTime->seconds start)
+     :end   (time/DateTime->seconds end)}))
 
 (defroutes handler
   (GET "/find" [query]
