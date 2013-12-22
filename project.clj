@@ -24,23 +24,26 @@
   :main ^:skip-aot lead.main
   :plugins [[com.keminglabs/cljx "0.3.1"]
             [codox "0.6.6"]]
-  :cljx {:builds [{:source-paths ["src/cljx"]
+  :source-paths ["src" "src/main/clojure"]
+  :java-source-paths ["src/main/java"]
+  :test-paths ["test" "src/test/clojure"]
+  :cljx {:builds [{:source-paths ["src/main/cljx"]
                    :output-path "target/classes"
                    :rules {:filetype "clj"
                            :features #{"clj-macro" "clj"}
                            :transforms []}}
-                  {:source-paths ["src/cljx"]
+                  {:source-paths ["src/main/cljx"]
                    :output-path "target/generated/cljs"
                    :rules :cljs}
-                  {:source-paths ["src/cljx"]
+                  {:source-paths ["src/main/cljx"]
                    :output-path "target/generated/clj"
                    :rules {:filetype "clj"
                            :features #{"cljs-macro" "clj"}
                            :transforms []}}
-                  {:source-paths ["test/cljx"]
+                  {:source-paths ["src/test/cljx"]
                    :output-path "target/test-classes"
                    :rules :clj}
-                  {:source-paths ["test/cljx"]
+                  {:source-paths ["src/test/cljx"]
                    :output-path "target/generated/test-cljs"
                    :rules :cljs}]}
   :hooks [cljx.hooks]
