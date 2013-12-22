@@ -1,6 +1,6 @@
 ## ClojureScript
 
-Lead uses node.js for JavaScript tests. Run
+Lead uses Node.js for JavaScript tests. Run
 
 ```
 npm install
