@@ -5,7 +5,7 @@
             :url "http://opensource.org/licenses/MIT"}
   :dependencies [
     [org.clojure/clojure "1.5.1"]
-    [org.clojure/clojurescript "0.0-2080"]
+    [org.clojure/clojurescript "0.0-2127"]
     [org.clojure/math.numeric-tower "0.0.2"]
     [org.clojure/data.json "0.2.3"]
     [clj-http "0.7.2" :exclusions [org.clojure/tools.reader]] ; tools.reader version conflicted with clojurescript requirement
@@ -64,4 +64,4 @@
                                 :test-commands {"node" ["./node_modules/coffee-script/bin/coffee" "test/coffee/run_clojure_tests.coffee"]}}
                     ; TODO this should replace instaparse dependency
                     :dependencies [[instaparse-cljs "1.2.2-SNAPSHOT"]]
-                    :plugins [[lein-cljsbuild "1.0.0"]]}})
+                    :plugins [[lein-cljsbuild "1.0.1"]]}})
