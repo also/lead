@@ -1,7 +1,9 @@
 (ns lead.connector
   (:require [lead.functions :as functions]
             [lead.matcher :as matcher]
-            [lead.series :as series]))
+            [lead.series :as series]
+            [lead.time :refer [DateTime->seconds Duration->seconds seconds->DateTime]])
+  (:import [lead LoadOptions Series TreeNode]))
 
 (def ^:dynamic *connector*)
 
@@ -71,3 +73,30 @@
 (defn prefixed-connector
   [prefix connector]
   (->PrefixedConnector (series/name->path prefix) connector))
+
+(defn TreeNode->map
+  [tree-node]
+  {:name    (.getName tree-node)
+   :is-leaf (.isLeaf tree-node)})
+
+(defn map->LoadOptions
+  [opts]
+  (reify LoadOptions
+    (getStart [this] (seconds->DateTime (:start opts)))
+    (getEnd [this] (seconds->DateTime (:end opts)))))
+
+(defn Series->FixedIntervalTimeSeries
+  [series]
+  (series/map->FixedIntervalTimeSeries {:name   (.getName series)
+                                        :start  (DateTime->seconds (.getStart series))
+                                        :end    (DateTime->seconds (.getEnd series))
+                                        :step   (Duration->seconds (.getStep series))
+                                        :values (.getValues series)}))
+
+(extend lead.Connector
+  Connector
+  {:query         (fn [connector pattern]
+                    (map TreeNode->map (.query connector pattern)))
+   :load-serieses (fn [connector targets opts]
+                    (map Series->FixedIntervalTimeSeries
+                         (.load connector targets (map->LoadOptions opts))))})

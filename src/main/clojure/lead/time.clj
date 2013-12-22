@@ -1,5 +1,5 @@
 (ns lead.time
-  (:import [org.joda.time Period DurationFieldType DateTime DateTimeZone]))
+  (:import [org.joda.time Period DurationFieldType DateTime DateTimeZone Duration]))
 
 (defn now [] (DateTime. DateTimeZone/UTC))
 
@@ -10,6 +10,10 @@
 (defn DateTime->seconds
   [^DateTime date-time]
   (-> date-time .getMillis (quot 1000)))
+
+(defn Duration->seconds
+  [^Duration duration]
+  (-> duration .getMillis (quot 1000)))
 
 (def period-prefixes
   {"s" (DurationFieldType/seconds)
