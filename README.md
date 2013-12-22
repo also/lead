@@ -14,8 +14,10 @@ If you're happy with Graphite's Carbon data storage, you can use Lead's implemen
 
 ## Installation and Configuration
 
-```clojure
-; TODO
+Lead is a written in Clojure, and uses [Leiningen](http://leiningen.org/) to build. After installing Leiningen, make a copy of the Lead [example](example) project. Inside the project directory, run the command
+
+```
+lein run 3000 config.clj
 ```
 
 See [Configuration](doc/configuration.md) for a list of options.
