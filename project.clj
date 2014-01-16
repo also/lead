@@ -18,6 +18,7 @@
     [joda-time/joda-time "2.3"]
     [com.google.guava/guava "15.0"]]
   :main ^:skip-aot lead.main
+  :aot [lead.matcher]
   :plugins [[com.keminglabs/cljx "0.3.1"]
             [codox "0.6.6"]]
   :source-paths ["src/main/clojure"]

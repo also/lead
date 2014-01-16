@@ -1,6 +1,10 @@
 (ns lead.matcher
   (:require [clojure.string :as string])
-  (:import java.util.regex.Pattern))
+  (:import java.util.regex.Pattern)
+  (:gen-class
+    :main false
+    :methods [^:static [fnmatchPatternToRegex [String] java.util.regex.Pattern]
+              ^:static [patternSegmentToRegexes [String] java.util.List]]))
 
 (defn fnmatch-pattern-to-regex
   "Implement fnmatch patterns from http://hg.python.org/cpython/file/3a1db0d2747e/Lib/fnmatch.py"
@@ -30,6 +34,8 @@
               (recur (conj res (Pattern/quote (str c))) i)))
           res)))))
 
+(def ^:private fnmatchPatternToRegex fnmatch-pattern-to-regex)
+
 (defn pattern-segment-to-regexes
   "https://github.com/graphite-project/graphite-web/blob/0.9.12/webapp/graphite/storage.py#L231"
   [segment]
@@ -41,6 +47,8 @@
             variations (string/split (.substring segment (inc p1) p2) #"\,")]
         (map #(re-pattern (str \^ (fnmatch-pattern-to-regex (str prefix % suffix)) \$)) variations))
       [(re-pattern (str \^(fnmatch-pattern-to-regex segment) \$))])))
+
+(def ^:private patternSegmentToRegexes pattern-segment-to-regexes)
 
 (defn segment-matcher
   [pattern]
