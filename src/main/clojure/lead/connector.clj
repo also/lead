@@ -67,8 +67,10 @@
                                  (if (matches-prefix target-path path-prefix)
                                    (series/path->name (drop-prefix target-path path-prefix)))))
                              prefixed-targets))]
-      (map #(update-in % [:name] add-prefix path-prefix)
-           (load-serieses connector targets opts)))))
+      (if (seq targets)
+        (map #(update-in % [:name] add-prefix path-prefix)
+             (load-serieses connector targets opts))
+        ()))))
 
 (defn prefixed-connector
   [prefix connector]
