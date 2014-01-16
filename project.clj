@@ -23,6 +23,7 @@
   :source-paths ["src/main/clojure"]
   :java-source-paths ["src/main/java"]
   :test-paths ["src/test/clojure"]
+  :javac-options ["-target" "1.6" "-source" "1.6"]
   :cljx {:builds [{:source-paths ["src/main/cljx"]
                    :output-path "target/classes"
                    :rules {:filetype "clj"
