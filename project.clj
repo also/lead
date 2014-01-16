@@ -6,7 +6,6 @@
   :dependencies [
     [org.clojure/clojure "1.5.1"]
     [org.clojure/clojurescript "0.0-2127"]
-    [org.clojure/math.numeric-tower "0.0.2"]
     [org.clojure/data.json "0.2.3"]
     [clj-http "0.7.2"]
     [ring/ring-core "1.2.1"]
