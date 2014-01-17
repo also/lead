@@ -24,8 +24,6 @@ This runs the server on port 3000 using the `config.clj` configuration file.
 
 See [Configuration](doc/configuration.md) for a list of options.
 
-You'll need to configure Lead with a source of data. Out of the box, Lead can pull data from
-
 ## Extending
 
 ```clojure
