@@ -20,7 +20,11 @@ Lead is a written in Clojure, and uses [Leiningen](http://leiningen.org/) to bui
 lein run 3000 config.clj
 ```
 
+This runs the server on port 3000 using the `config.clj` configuration file.
+
 See [Configuration](doc/configuration.md) for a list of options.
+
+You'll need to configure Lead with a source of data. Out of the box, Lead can pull data from
 
 ## Extending
 
@@ -28,7 +32,7 @@ See [Configuration](doc/configuration.md) for a list of options.
 ; TODO
 ```
 
-Extend [Connector](src/lead/connector.clj). See [GraphiteConnector](src/lead/graphite/connector.clj) for an example.
+Extend [Connector](src/lead/connector.clj). See [GraphiteConnector](src/main/clojure/lead/graphite/connector.clj) for an example.
 
 ## Roadmap
 
