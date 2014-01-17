@@ -32,7 +32,7 @@ You'll need to configure Lead with a source of data. Out of the box, Lead can pu
 ; TODO
 ```
 
-Extend [Connector](src/lead/connector.clj). See [GraphiteConnector](src/main/clojure/lead/graphite/connector.clj) for an example.
+Extend [Connector](src/main/clojure/lead/connector.clj). See [GraphiteConnector](src/main/clojure/lead/graphite/connector.clj) for an example.
 
 ## Roadmap
 
