@@ -34,7 +34,7 @@
               (recur (conj res (Pattern/quote (str c))) i)))
           res)))))
 
-(def ^:private fnmatchPatternToRegex fnmatch-pattern-to-regex)
+(def ^:private -fnmatchPatternToRegex fnmatch-pattern-to-regex)
 
 (defn pattern-segment-to-regexes
   "https://github.com/graphite-project/graphite-web/blob/0.9.12/webapp/graphite/storage.py#L231"
@@ -48,7 +48,7 @@
         (map #(re-pattern (str \^ (fnmatch-pattern-to-regex (str prefix % suffix)) \$)) variations))
       [(re-pattern (str \^(fnmatch-pattern-to-regex segment) \$))])))
 
-(def ^:private patternSegmentToRegexes pattern-segment-to-regexes)
+(def ^:private -patternSegmentToRegexes pattern-segment-to-regexes)
 
 (defn segment-matcher
   [pattern]

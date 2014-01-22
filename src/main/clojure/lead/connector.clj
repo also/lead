@@ -98,7 +98,7 @@
 (extend lead.Connector
   Connector
   {:query         (fn [connector pattern]
-                    (map TreeNode->map (.query connector pattern)))
+                    (map TreeNode->map (.find connector pattern)))
    :load-serieses (fn [connector targets opts]
                     (map Series->FixedIntervalTimeSeries
                          (.load connector targets (map->LoadOptions opts))))})
