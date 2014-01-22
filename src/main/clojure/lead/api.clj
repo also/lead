@@ -37,7 +37,8 @@
          {:status 200
           :body results}))
   (GET "/render" [target & params]
-    (let [result (run (parse target) (parse-request params))]
+    (let [targets (if (string? target) [target] target)
+          result (flatten (pmap #(run (parse %) (parse-request params)) targets))]
       {:status 200
        :body result}))
   (GET "/parse" [target]
