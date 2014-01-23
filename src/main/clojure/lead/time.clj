@@ -43,6 +43,6 @@
 (defn parse-time
   [s ^DateTime now]
   (cond
-    (re-matches #"\d+" s) (seconds->DateTime (* 1000 (Integer. s)))
+    (re-matches #"\d+" s) (seconds->DateTime (Integer. s))
     :else (if-let [period (parse-period s)]
             (.plus now period))))
