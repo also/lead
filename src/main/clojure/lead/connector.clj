@@ -2,7 +2,8 @@
   (:require [lead.functions :as functions]
             [lead.matcher :as matcher]
             [lead.series :as series]
-            [lead.time :refer [DateTime->seconds Duration->seconds seconds->DateTime]])
+            [lead.time :refer [DateTime->seconds Duration->seconds seconds->DateTime]]
+            [clj-http.client :as http])
   (:import [lead LoadOptions Series TreeNode]))
 
 (def ^:dynamic *connector*)
@@ -75,6 +76,24 @@
 (defn prefixed-connector
   [prefix connector]
   (->PrefixedConnector (series/name->path prefix) connector))
+
+(defrecord LeadConnector [url]
+  Connector
+  (query [this pattern]
+    (let [url (str (:url this) "/find")
+          response (http/get url {:as :json
+                                  :query-params {"query" pattern}})]
+      (:body response)))
+
+  (load-serieses [this targets {:keys [start end]}]
+    (let [url (str (:url this) "/render")
+          response (http/get url {:as :json
+                                  :query-params {"target" targets
+                                                 "start" start
+                                                 "end" end}})]
+      (:body response))))
+
+(def remote ->LeadConnector)
 
 (defn TreeNode->map
   [tree-node]
