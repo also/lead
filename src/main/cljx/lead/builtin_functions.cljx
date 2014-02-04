@@ -121,7 +121,7 @@
     :complicated true}
   load-from-connector
   [opts target]
-  (connector/load-serieses @connector/*connector* [target] opts))
+  (connector/load @connector/*connector* target opts))
 
 (leadfn
   ^{:args "Ts"

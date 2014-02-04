@@ -12,7 +12,7 @@
 
 (defprotocol Connector
   (query [this pattern])
-  (load-serieses [this targets opts]))
+  (load [this target opts]))
 
 (defn set-connector
   [connector]
@@ -23,10 +23,10 @@
   (query [this pattern]
     (distinct (flatten (pmap #(query % pattern) connectors))))
 
-  (load-serieses [this targets opts]
+  (load [this target opts]
     (flatten (pmap (fn [connector]
                      (try
-                       (load-serieses connector targets opts)
+                       (load connector target opts)
                        (catch Exception ex
                          (functions/exception ex)
                          [])))
@@ -61,16 +61,13 @@
               :is-leaf false}]))
         ())))
 
-  (load-serieses [this prefixed-targets opts]
-    (let [targets (keep identity
-                        (map (fn [target]
-                               (let [target-path (series/name->path target)]
-                                 (if (matches-prefix target-path path-prefix)
-                                   (series/path->name (drop-prefix target-path path-prefix)))))
-                             prefixed-targets))]
-      (if (seq targets)
+  (load [this prefixed-target opts]
+    (let [target-path (series/name->path prefixed-target)
+          target (if (matches-prefix target-path path-prefix)
+                   (series/path->name (drop-prefix target-path path-prefix)))]
+      (if target
         (map #(update-in % [:name] add-prefix path-prefix)
-             (load-serieses connector targets opts))
+             (load connector target opts))
         ()))))
 
 (defn prefixed-connector
@@ -85,10 +82,10 @@
                                   :query-params {"query" pattern}})]
       (:body response)))
 
-  (load-serieses [this targets {:keys [start end]}]
+  (load [this target {:keys [start end]}]
     (let [url (str (:url this) "/render")
           response (http/get url {:as :json
-                                  :query-params {"target" targets
+                                  :query-params {"target" target
                                                  "start" start
                                                  "end" end}})]
       (:body response))))
@@ -118,6 +115,6 @@
   Connector
   {:query         (fn [connector pattern]
                     (map TreeNode->map (.find connector pattern)))
-   :load-serieses (fn [connector targets opts]
+   :load (fn [connector target opts]
                     (map Series->FixedIntervalTimeSeries
-                         (.load connector targets (map->LoadOptions opts))))})
+                         (.load connector target (map->LoadOptions opts))))})

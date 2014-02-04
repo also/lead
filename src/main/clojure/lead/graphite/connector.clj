@@ -3,7 +3,7 @@
            (com.google.common.base Charsets)
            (java.util Collections))
   (:require [clj-http.client :as http]
-            [lead.connector :refer [Connector query load-serieses connector-list]]
+            [lead.connector :refer [Connector query load connector-list]]
             [lead.matcher :refer [segment-matcher]]))
 
 (defn graphite-json->serieses [targets]
@@ -42,10 +42,10 @@
                                                  "format" "completer"}})]
       (transform-find-response pattern (:body response))))
 
-  (load-serieses [this targets {:keys [start end]}]
+  (load [this target {:keys [start end]}]
     (let [url (str url "/render/")
           response (http/get url {:as :json
-                                  :query-params {"target" targets
+                                  :query-params {"target" target
                                                  "from" start
                                                  "until" end
                                                  "format" "json"}})
@@ -95,11 +95,10 @@
 (defrecord ConsistentHashedGraphiteConnector [wrapped node ring]
   Connector
   (query [this pattern] (query wrapped pattern))
-  (load-serieses [this targets opts]
-    (let [matching-serieses (filter #(= node (get-node % ring)) targets)]
-      (if (seq matching-serieses)
-        (load-serieses wrapped matching-serieses opts)
-        ()))))
+  (load [this target opts]
+    (if (= node (get-node target ring))
+      (load wrapped target opts)
+      ())))
 
 (defn consistent-hashing-cluster [replicas & host-specs]
   (let [ring (create-ring replicas (map :node host-specs))
