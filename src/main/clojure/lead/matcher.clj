@@ -80,13 +80,13 @@
   (is-leaf [this node]
     (empty? (:children node))))
 
-(defn- full-name [path name]
-  (str (string/join "." (map (fn [p] (if (= :* p) "*" p)) (concat path [name])))))
+(defn- path->name [path]
+  (str (string/join "." (map (fn [p] (if (= :* p) "*" p)) path))))
 
 ; TODO the meaning of "name" is a little fuzzy in here
 ; should it be the node name or the metric name?
 ; see tree-seq
-(defn tree-find [finder matcher-path]
+(defn tree-find [finder pattern]
   (let [walk (fn walk [node path matcher-path]
                (lazy-seq
                  (let [node-names (children finder node)
@@ -104,7 +104,16 @@
                      (filter identity
                              (map (fn [name node]
                                     (if (matcher name)
-                                      {:name    (full-name path name)
-                                       :is-leaf (is-leaf finder node)}))
+                                      {:path    (conj path name)
+                                       :is-leaf (is-leaf finder node)
+                                       :node node}))
                                   node-names nodes))))))]
-    (walk (root finder) [] matcher-path)))
+    (walk (root finder) [] (pattern->matcher-path pattern))))
+
+(defn tree-traverse [finder path]
+  (let [walk (fn walk [node path]
+               (lazy-seq
+                 (cons node
+                       (if-let [c (child finder node (first path))]
+                         (walk c (rest path))))))]
+    (walk (root finder) path)))
