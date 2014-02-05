@@ -110,6 +110,9 @@
                                   node-names nodes))))))]
     (walk (root finder) [] (pattern->matcher-path pattern))))
 
+(defn tree-query [finder pattern]
+  (map (fn [result] {:name (path->name (:path result)) :is-leaf (:is-leaf result)}) (tree-find finder pattern)))
+
 (defn tree-traverse [finder path]
   (let [walk (fn walk [node path]
                (lazy-seq
