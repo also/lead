@@ -46,14 +46,15 @@
             suffix (.substring segment (inc p2))
             variations (string/split (.substring segment (inc p1) p2) #"\,")]
         (map #(re-pattern (str \^ (fnmatch-pattern-to-regex (str prefix % suffix)) \$)) variations))
-      [(re-pattern (str \^(fnmatch-pattern-to-regex segment) \$))])))
+      [(re-pattern (str \^ (fnmatch-pattern-to-regex segment) \$))])))
 
 (def ^:private -patternSegmentToRegexes pattern-segment-to-regexes)
 
 (defn segment-matcher
   [pattern]
   (let [regexes (pattern-segment-to-regexes pattern)]
-    (fn [s] (some #(re-matches % s) regexes))))
+    ; TODO only match wildcard segment to non-pattern segment
+    (fn [s] (or (= :* s) (some #(re-matches % s) regexes)))))
 
 (defn segment-matches
   [segment pattern]
@@ -80,7 +81,7 @@
     (empty? (:children node))))
 
 (defn- full-name [path name]
-  (str (string/join "." (concat path [name]))))
+  (str (string/join "." (map (fn [p] (if (= :* p) "*" p)) (concat path [name])))))
 
 ; TODO the meaning of "name" is a little fuzzy in here
 ; should it be the node name or the metric name?
@@ -92,18 +93,18 @@
                        nodes (map #(child finder node %) node-names)
                        matcher (first matcher-path)
                        matcher-path (rest matcher-path)]
-                  (if (seq matcher-path)
-                    ; if there are more segments to match, follow the branches
-                    (mapcat (fn [name node]
-                              (if (and (not (is-leaf finder node))
-                                       (matcher name))
-                                (walk node (conj path name) matcher-path)))
-                            node-names nodes)
-                    ; otherwise return the matches at this level
-                    (filter identity
-                            (map (fn [name node]
-                                   (if (matcher name)
-                                     {:name (full-name path name)
-                                      :is-leaf (is-leaf finder node)}))
-                                 node-names nodes))))))]
+                   (if (seq matcher-path)
+                     ; if there are more segments to match, follow the branches
+                     (mapcat (fn [name node]
+                               (if (and (not (is-leaf finder node))
+                                        (matcher name))
+                                 (walk node (conj path name) matcher-path)))
+                             node-names nodes)
+                     ; otherwise return the matches at this level
+                     (filter identity
+                             (map (fn [name node]
+                                    (if (matcher name)
+                                      {:name    (full-name path name)
+                                       :is-leaf (is-leaf finder node)}))
+                                  node-names nodes))))))]
     (walk (root finder) [] matcher-path)))
