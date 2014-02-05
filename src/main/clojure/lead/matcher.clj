@@ -58,3 +58,52 @@
 (defn segment-matches
   [segment pattern]
   (boolean ((segment-matcher pattern) segment)))
+
+(defn pattern->matcher-path [pattern]
+  (map segment-matcher (string/split pattern #"\.")))
+
+(defprotocol TreeFinder
+  (root [this])
+  (children [this node])
+  (child [this node name])
+  (is-leaf [this node]))
+
+; {children: {:a {:children {:a1 ()} :b ()}}
+(defrecord MapTreeFinder [tree]
+  TreeFinder
+  (root [this] tree)
+  (children [this node]
+    (keys (:children node)))
+  (child [this node name]
+    (get (:children node) name))
+  (is-leaf [this node]
+    (empty? (:children node))))
+
+(defn- full-name [path name]
+  (str (string/join "." (concat path [name]))))
+
+; TODO the meaning of "name" is a little fuzzy in here
+; should it be the node name or the metric name?
+; see tree-seq
+(defn tree-find [finder matcher-path]
+  (let [walk (fn walk [node path matcher-path]
+               (lazy-seq
+                 (let [node-names (children finder node)
+                       nodes (map #(child finder node %) node-names)
+                       matcher (first matcher-path)
+                       matcher-path (rest matcher-path)]
+                  (if (seq matcher-path)
+                    ; if there are more segments to match, follow the branches
+                    (mapcat (fn [name node]
+                              (if (and (not (is-leaf finder node))
+                                       (matcher name))
+                                (walk node (conj path name) matcher-path)))
+                            node-names nodes)
+                    ; otherwise return the matches at this level
+                    (filter identity
+                            (map (fn [name node]
+                                   (if (matcher name)
+                                     {:name (full-name path name)
+                                      :is-leaf (is-leaf finder node)}))
+                                 node-names nodes))))))]
+    (walk (root finder) [] matcher-path)))
