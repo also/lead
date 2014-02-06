@@ -12,6 +12,14 @@ If you're happy with Graphite's Carbon data storage, you can use Lead's implemen
 
 ![I'm sure this diagram will answer all your questions](doc/diagram.png)
 
+## Integrating
+
+Lead can fetch data from these sources:
+
+* Graphite, using [lead.graphite.connector](src/main/clojure/lead/graphite/connector.clj)
+* [Amazon CloudWatch](http://aws.amazon.com/cloudwatch/), using [lead-cloudwatch](https://github.com/also/lead-cloudwatch)
+* Anything that implements the Lead HTTP API, using [lead.connector.remote](src/main/clojure/lead/connector.clj)
+
 ## Installation and Configuration
 
 Lead is a written in Clojure, and uses [Leiningen](http://leiningen.org/) to build. After installing Leiningen, make a copy of the Lead [example](example) project. Inside the project directory, run the command
@@ -34,9 +42,7 @@ Extend [Connector](src/main/clojure/lead/connector.clj). See [GraphiteConnector]
 
 ## Roadmap
 
-Lead is still experimental, and currently supports only the Graphite API. Soon, it will be expanded to directly support:
+Lead is still experimental, but it can already fetch data from several sources. Soon, it will be expanded to directly support:
 
-* Lead's own API
 * OpenTSDB
 * [ElasticSearch](http://www.elasticsearch.org/)
-* [Amazon CloudWatch](http://aws.amazon.com/cloudwatch/)
