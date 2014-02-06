@@ -12,7 +12,8 @@
                          name->path
                          path->name]]
     #+clj [lead.connector :as connector]
-    #+clj [cheshire.core :as cheshire])
+    #+clj [cheshire.core :as cheshire]
+    #+clj [clojure.walk])
   #+cljs (:require-macros [lead.functions :refer [leadfn]])
   #+clj (:require [lead.functions :refer [leadfn]]))
 
@@ -73,6 +74,14 @@
   parse-json
   [string]
   (cheshire/parse-string string))
+
+(leadfn
+  ^{:args "?"}
+  serieses
+  [o]
+  (if (map? o)
+    (clojure.walk/keywordize-keys o)
+    (map clojure.walk/keywordize-keys o)))
 
 (leadfn
   ^{:args "T"
