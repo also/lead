@@ -49,3 +49,17 @@
   (is (segment-matches "ace" "a[{b,c}]e"))
   (is (segment-matches "a{}b" "a{{}}b"))
   (is (segment-matches "a{b}c" "a{{}b}c")))
+
+(def wildcard-tree
+  (->MapTreeFinder
+    {:children
+      {"a"
+        {:children
+          {:*
+            {:children
+              {"b" ()}}}}}}))
+
+(deftest test-wildcard-tree
+  (let [[result] (tree-find wildcard-tree "a.x.b")]
+    (is (= :* (second (:path result))))
+    (is (= "x" (second (:matched-path result))))))

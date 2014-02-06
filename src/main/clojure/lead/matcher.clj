@@ -87,7 +87,8 @@
 ; should it be the node name or the metric name?
 ; see tree-seq
 (defn tree-find [finder pattern]
-  (let [walk (fn walk [node path matcher-path]
+  (let [pattern-path (string/split pattern #"\.")
+        walk (fn walk [node path matcher-path]
                (lazy-seq
                  (let [node-names (children finder node)
                        nodes (map #(child finder node %) node-names)
@@ -104,14 +105,15 @@
                      (filter identity
                              (map (fn [name node]
                                     (if (matcher name)
-                                      {:path    (conj path name)
-                                       :is-leaf (is-leaf finder node)
-                                       :node node}))
+                                      {:path         (conj path name)
+                                       :matched-path (map #(if (= :* %1) %2 %1) (conj path name) pattern-path)
+                                       :is-leaf      (is-leaf finder node)
+                                       :node         node}))
                                   node-names nodes))))))]
     (walk (root finder) [] (pattern->matcher-path pattern))))
 
 (defn tree-query [finder pattern]
-  (map (fn [result] {:name (path->name (:path result)) :is-leaf (:is-leaf result)}) (tree-find finder pattern)))
+  (map (fn [result] {:name (path->name (:matched-path result)) :is-leaf (:is-leaf result)}) (tree-find finder pattern)))
 
 (defn tree-traverse [finder path]
   (let [walk (fn walk [node path]
