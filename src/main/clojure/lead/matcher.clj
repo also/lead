@@ -112,6 +112,9 @@
                                   node-names nodes))))))]
     (walk (root finder) [] (pattern->matcher-path pattern))))
 
+(defn tree-find-leaves [finder pattern]
+  (filter :is-leaf (tree-find finder pattern)))
+
 (defn tree-query [finder pattern]
   (map (fn [result] {:name (path->name (:matched-path result)) :is-leaf (:is-leaf result)}) (tree-find finder pattern)))
 
