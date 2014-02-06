@@ -11,7 +11,8 @@
                          safe-max
                          name->path
                          path->name]]
-    #+clj [lead.connector :as connector])
+    #+clj [lead.connector :as connector]
+    #+clj [cheshire.core :as cheshire])
   #+cljs (:require-macros [lead.functions :refer [leadfn]])
   #+clj (:require [lead.functions :refer [leadfn]]))
 
@@ -56,6 +57,22 @@
   "Applies the map function to each value in each series"
   [serieses f name]
   (map #(assoc % :name (str name \( (:name %) \)) :values (map f (:values %))) serieses))
+
+(leadfn
+  ^{:args "s"
+    :complicated true
+    :aliases ["param"]}
+  param-value
+  [opts name]
+  (get (:params opts) name))
+
+#+clj
+(leadfn
+  ^{:args    "s"
+    :aliases ["parseJson"]}
+  parse-json
+  [string]
+  (cheshire/parse-string string))
 
 (leadfn
   ^{:args "T"

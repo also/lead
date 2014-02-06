@@ -27,9 +27,10 @@
         end (if end-param
               (time/parse-time end-param now)
               now)]
-    {:now   (time/DateTime->seconds now)
-     :start (time/DateTime->seconds start)
-     :end   (time/DateTime->seconds end)}))
+    {:params params
+     :now    (time/DateTime->seconds now)
+     :start  (time/DateTime->seconds start)
+     :end    (time/DateTime->seconds end)}))
 
 (defroutes handler
   (GET "/find" [query]
@@ -41,6 +42,14 @@
           result (flatten (pmap #(run (parse %) (parse-request params)) targets))]
       {:status 200
        :body result}))
+  (POST "/render" [:as request]
+        (let [body (:body request)
+              target (get body "target")
+              targets (if (string? target) [target] target)
+              opts (parse-request body)
+              result (flatten (pmap #(run (parse %) opts) targets))]
+          {:status 200
+          :body result}))
   (GET "/parse" [target]
     {:status 200
      :body (parse target)})
@@ -56,9 +65,12 @@
         {:status 500
          :body {:exception (.getMessage e) :details (ex-data e)}}))))
 
+; TODO i probably shouldn't be writing CORS handling code
 (defn wrap-cors [handler]
   (fn [request]
-    (let [response (handler request)]
+    (let [response (if (= :options (:request-method request))
+                     {:status 200}
+                     (handler request))]
       (update-in response [:headers]
                  (fn [headers]
                    (assoc headers
@@ -71,6 +83,7 @@
     (routes handler (apply routes @*routes*) not-found)
     wrap-exception
     wrap-json-response
+    wrap-json-body
     wrap-cors
     wrap-params))
 
