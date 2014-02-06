@@ -18,7 +18,7 @@ Lead can fetch data from these sources:
 
 * Graphite, using [lead.graphite.connector](src/main/clojure/lead/graphite/connector.clj)
 * [Amazon CloudWatch](http://aws.amazon.com/cloudwatch/), using [lead-cloudwatch](https://github.com/also/lead-cloudwatch)
-* Anything that implements the Lead HTTP API, using [lead.connector.remote](src/main/clojure/lead/connector.clj)
+* Anything that implements the Lead [HTTP API](doc/http-api.md), using [lead.connector.remote](src/main/clojure/lead/connector.clj)
 
 ## Installation and Configuration
 
