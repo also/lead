@@ -1,14 +1,14 @@
 (ns lead.api
   (:use ring.middleware.params
-        lead.parser
-        lead.functions
         ring.middleware.json
         compojure.core
         clojure.tools.logging)
   (:require [compojure.route :as route]
-            [lead.functions :as fns]
+            [lead.functions]
+            [lead.parser]
             [lead.connector :as conn]
             [lead.time :as time]
+            [lead.core :as core]
             [clojure.string :as string]))
 
 (def ^:dynamic *routes*)
@@ -37,24 +37,29 @@
        (let [results (conn/query @conn/*connector* query)]
          {:status 200
           :body results}))
+
   (GET "/render" [target & params]
     (let [targets (if (string? target) [target] target)
-          result (flatten (pmap #(run (parse %) (parse-request params)) targets))]
+          opts (parse-request params)
+          result (core/eval-targets targets opts)]
       {:status 200
        :body result}))
+
   (POST "/render" [:as request]
         (let [body (:body request)
               target (get body "target")
               targets (if (string? target) [target] target)
               opts (parse-request body)
-              result (flatten (pmap #(run (parse %) opts) targets))]
+              result (core/eval-targets targets opts)]
           {:status 200
           :body result}))
+
   (GET "/parse" [target]
     {:status 200
-     :body (parse target)})
+     :body (lead.parser/parse target)})
+
   (GET "/functions" []
-    {:status 200 :body (keys @fns/*fn-registry*)}))
+    {:status 200 :body (keys @lead.functions/*fn-registry*)}))
 
 (def not-found (route/not-found "Not Found"))
 (defn wrap-exception [f]
