@@ -1,8 +1,8 @@
 (ns lead.connector
-  (:require [lead.functions :as functions]
-            [lead.matcher :as matcher]
+  (:require [lead.matcher :as matcher]
             [lead.series :as series]
             [lead.time :refer [DateTime->seconds Duration->seconds seconds->DateTime]]
+            [lead.core :as core]
             [clj-http.client :as http])
   (:import [lead LoadOptions Series TreeNode]))
 
@@ -18,19 +18,23 @@
   [connector]
   (reset! *connector* connector))
 
+(defn map-connectors
+  [f connectors]
+  (flatten (pmap (fn [connector]
+                   (try
+                     (f connector)
+                     (catch Exception ex
+                       (core/exception ex)
+                       [])))
+                 connectors)))
+
 (defrecord ConnectorList [connectors]
   Connector
   (query [this pattern]
-    (distinct (flatten (pmap #(query % pattern) connectors))))
+    (distinct (map-connectors #(query % pattern) connectors)))
 
   (load [this target opts]
-    (flatten (pmap (fn [connector]
-                     (try
-                       (load connector target opts)
-                       (catch Exception ex
-                         (functions/exception ex)
-                         [])))
-                   connectors))))
+    (map-connectors #(load % target opts)) connectors))
 
 (defn connector-list
   [& connectors]

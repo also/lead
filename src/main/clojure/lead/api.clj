@@ -81,6 +81,11 @@
                    (assoc headers
                           "Access-Control-Allow-Origin" "*"
                           "Access-Control-Allow-Headers" (get (:headers request) "access-control-request-headers" "")))))))
+(defn wrap-context
+  [handler]
+  (fn [request]
+    (binding [core/*context* (atom (core/create-context))]
+      (handler request))))
 
 (defn create-handler
   []
@@ -90,7 +95,8 @@
     wrap-json-response
     wrap-json-body
     wrap-cors
-    wrap-params))
+    wrap-params
+    wrap-context))
 
 (defn wrap-uri-prefix [handler prefix]
   (fn [request]
