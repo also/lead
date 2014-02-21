@@ -1,6 +1,7 @@
 (ns lead.core
   (:require [lead.core]
-            [lead.parser]))
+            [lead.parser]
+            [lead.functions]))
 
 (def ^:dynamic *context*)
 

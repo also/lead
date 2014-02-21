@@ -34,7 +34,7 @@
     (distinct (map-connectors #(query % pattern) connectors)))
 
   (load [this target opts]
-    (map-connectors #(load % target opts)) connectors))
+    (map-connectors #(load % target opts) connectors)))
 
 (defn connector-list
   [& connectors]
