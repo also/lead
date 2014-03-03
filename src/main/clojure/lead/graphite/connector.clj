@@ -4,7 +4,7 @@
            (java.util Collections))
   (:require [clj-http.client :as http]
             [lead.connector :refer [Connector query load connector-list]]
-            [lead.matcher :refer [segment-matcher]]))
+            [lead.matcher :refer [segment-matcher pattern?]]))
 
 (defn graphite-json->serieses [targets]
     (map (fn [target]
@@ -94,9 +94,12 @@
 
 (defrecord ConsistentHashedGraphiteConnector [wrapped node ring]
   Connector
-  (query [this pattern] (query wrapped pattern))
+  (query [this pattern]
+    (if (or (pattern? pattern) (= node (get-node pattern ring)))
+      (query wrapped pattern)
+      ()))
   (load [this target opts]
-    (if (= node (get-node target ring))
+    (if (or (pattern? target) (= node (get-node target ring)))
       (load wrapped target opts)
       ())))
 

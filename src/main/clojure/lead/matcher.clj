@@ -50,6 +50,8 @@
 
 (def ^:private -patternSegmentToRegexes pattern-segment-to-regexes)
 
+(defn pattern? [s] (boolean (re-find #"[\[?*{]" s)))
+
 (defn segment-matcher
   [pattern]
   (let [regexes (pattern-segment-to-regexes pattern)]
