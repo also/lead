@@ -44,5 +44,8 @@
   [s ^DateTime now]
   (cond
     (re-matches #"\d+" s) (seconds->DateTime (Integer. s))
+    (= "now" s) now
+    (= "midnight" s) (.withTimeAtStartOfDay now)
     :else (if-let [period (parse-period s)]
-            (.plus now period))))
+            (.plus now period)
+            (throw (ex-info "invalid time string" {:string s})))))
