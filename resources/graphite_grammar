@@ -32,7 +32,7 @@ number = sci-number / float-number / int-number
 
 func = #'[a-zA-Z_]' #'[a-zA-Z0-9_]'*
 args = (arg (<','> sp arg)*)?
-call = func <'('> args <')'>
+call = func <'('> sp args sp <')'>
 
 <metric-char> = #'[a-zA-Z0-9!#$%&"\'*+.:;<=>?@\[\\\]^_`|~-]'
 <metric-group> = '{' (metric-char / ',')+ '}'
