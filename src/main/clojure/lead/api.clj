@@ -81,6 +81,7 @@
                    (assoc headers
                           "Access-Control-Allow-Origin" "*"
                           "Access-Control-Allow-Headers" (get (:headers request) "access-control-request-headers" "")))))))
+
 (defn wrap-context
   [handler]
   (fn [request]
@@ -91,6 +92,7 @@
   []
   (->
     (routes handler (apply routes @*routes*) not-found)
+    wrap-json-response
     wrap-exception
     wrap-json-response
     wrap-json-body
