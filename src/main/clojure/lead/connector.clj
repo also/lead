@@ -78,23 +78,33 @@
   [prefix connector]
   (->PrefixedConnector (series/name->path prefix) connector))
 
-(defrecord LeadConnector [url]
+(defrecord LeadConnector [url opts query-opts load-opts]
   Connector
   (query [this pattern]
     (let [url (str (:url this) "/find")
-          response (http/get url {:as :json
-                                  :query-params {"query" pattern}})]
+          response (http/get url (merge
+                                   opts
+                                   query-opts
+                                   {:as           :json
+                                    :query-params {"query" pattern}}))]
       (:body response)))
 
   (load [this target {:keys [start end]}]
     (let [url (str (:url this) "/render")
-          response (http/get url {:as :json
-                                  :query-params {"target" target
-                                                 "start" start
-                                                 "end" end}})]
+          response (http/get url (merge
+                                   opts
+                                   load-opts
+                                   {:as           :json
+                                    :query-params {"target" target
+                                                   "start"  start
+                                                   "end"    end}}))]
       (:body response))))
 
-(def remote ->LeadConnector)
+(defn remote
+  ([url {:keys [opts query-opts load-opts]}]
+   (->LeadConnector url opts query-opts load-opts))
+  ([url]
+   (remote url {})))
 
 (defn TreeNode->map
   [tree-node]
