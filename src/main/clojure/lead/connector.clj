@@ -4,6 +4,7 @@
             [lead.time :refer [DateTime->seconds Duration->seconds seconds->DateTime]]
             [lead.core :as core]
             [clj-http.client :as http])
+  (:refer-clojure :exclude [load])
   (:import [lead LoadOptions Series TreeNode]))
 
 (def ^:dynamic *connector*)
