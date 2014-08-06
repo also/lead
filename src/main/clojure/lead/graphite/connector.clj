@@ -3,7 +3,7 @@
            (com.google.common.base Charsets)
            (java.util Collections))
   (:require [clj-http.client :as http]
-            [lead.connector :refer [Connector query load connector-list]]
+            [lead.connector :refer [Connector connector-list] :as connector]
             [lead.matcher :refer [segment-matcher pattern?]]))
 
 (defn graphite-json->serieses [targets]
@@ -96,11 +96,11 @@
   Connector
   (query [this pattern]
     (if (or (pattern? pattern) (= node (get-node pattern ring)))
-      (query wrapped pattern)
+      (connector/query wrapped pattern)
       ()))
-  (load [this target opts]
+  (connector/load [this target opts]
     (if (or (pattern? target) (= node (get-node target ring)))
-      (load wrapped target opts)
+      (connector/load wrapped target opts)
       ())))
 
 (defn consistent-hashing-cluster [replicas & host-specs]
