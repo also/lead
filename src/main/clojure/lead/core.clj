@@ -13,5 +13,5 @@
                      (update-in context [:exceptions] #(cons exception %)))))
 
 (defn eval-targets
-  [targets opts]
-  (flatten (pmap #(lead.functions/run (lead.parser/parse %) opts) targets)))
+  [targets ,opts]
+  (into {} (pmap (fn eval-target [target] [target (lead.functions/run (lead.parser/parse target) opts)]) targets)))

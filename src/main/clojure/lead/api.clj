@@ -41,18 +41,25 @@
   (GET "/render" [target & params]
     (let [targets (if (string? target) [target] target)
           opts (parse-request params)
-          result (core/eval-targets targets opts)]
+          result (flatten (vals (core/eval-targets targets opts)))]
       {:status 200
        :body result}))
 
-  (POST "/render" [:as request]
+  (GET "/execute" [target & params]
+       (let [targets (if (string? target) [target] target)
+             opts (parse-request params)
+             results (core/eval-targets targets opts)]
+         {:status 200
+          :body {:results results}}))
+
+  (POST "/execute" [:as request]
         (let [body (:body request)
               target (get body "target")
               targets (if (string? target) [target] target)
               opts (parse-request body)
-              result (core/eval-targets targets opts)]
+              results (core/eval-targets targets opts)]
           {:status 200
-          :body result}))
+          :body {:results results}}))
 
   (GET "/parse" [target]
     {:status 200
