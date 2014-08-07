@@ -10,7 +10,7 @@
 (defn exception
   [ex]
   (swap! *context* (fn [context]
-                     (update-in context [:exceptions] #(cons exception %)))))
+                     (update-in context [:exceptions] #(cons ex %)))))
 
 (defn eval-targets
   [targets ,opts]
