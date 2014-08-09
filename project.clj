@@ -4,7 +4,7 @@
   :license {:name "MIT License"
             :url "http://opensource.org/licenses/MIT"}
   :dependencies [
-    [org.clojure/clojure "1.5.1"]
+    [org.clojure/clojure "1.6.0"]
     [org.clojure/clojurescript "0.0-2127"]
     [clj-http "0.7.2"]
     [ring/ring-core "1.2.1"]
@@ -18,7 +18,7 @@
     [com.google.guava/guava "15.0"]]
   :main ^:skip-aot lead.main
   :aot [lead.matcher]
-  :plugins [[com.keminglabs/cljx "0.3.1"]
+  :plugins [[com.keminglabs/cljx "0.4.0"]
             [codox "0.6.6"]]
   :source-paths ["src/main/clojure"]
   :java-source-paths ["src/main/java"]
