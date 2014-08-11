@@ -4,12 +4,17 @@
         compojure.core
         clojure.tools.logging)
   (:require [compojure.route :as route]
+            [cheshire.generate :refer [add-encoder]]
+            [clojure.stacktrace :as stacktrace]
             [lead.functions]
             [lead.parser]
             [lead.connector :as conn]
             [lead.time :as time]
             [lead.core :as core]
             [clojure.string :as string]))
+
+; TODO this is only for exceptions
+(add-encoder clojure.lang.Var #(.writeString %2 (str %1)))
 
 (def ^:dynamic *routes*)
 (defn create-routes [] (atom []))
@@ -32,6 +37,31 @@
      :start  (time/DateTime->seconds start)
      :end    (time/DateTime->seconds end)}))
 
+(defn ex-message [^Throwable e]
+  (if (ex-data e)
+     (if-let [message (.getMessage e)]
+       message
+       (str e))
+     (str e)))
+
+(defn- transform-inner-exception [^Throwable e]
+  {:message (ex-message e)
+   :details (ex-data e)
+   :cause   (if-let [cause (.getCause e)]
+              (transform-inner-exception cause))})
+
+(defn transform-exception [^Throwable e]
+  (assoc (transform-inner-exception e)
+    :stacktrace (with-out-str (stacktrace/print-cause-trace e))))
+
+(defn execute [targets opts]
+  (let [results (core/eval-targets targets opts)
+        exceptions (:exceptions @core/*context*)
+        exception-details (map transform-exception exceptions)]
+    {:opts opts
+     :results results
+     :exceptions exception-details}))
+
 (defroutes handler
   (GET "/find" [query]
        (let [results (conn/query @conn/*connector* query)]
@@ -47,19 +77,17 @@
 
   (GET "/execute" [target & params]
        (let [targets (if (string? target) [target] target)
-             opts (parse-request params)
-             results (core/eval-targets targets opts)]
+             opts (parse-request params)]
          {:status 200
-          :body {:results results}}))
+          :body (execute targets opts)}))
 
   (POST "/execute" [:as request]
         (let [body (:body request)
               target (get body "target")
               targets (if (string? target) [target] target)
-              opts (parse-request body)
-              results (core/eval-targets targets opts)]
+              opts (parse-request body)]
           {:status 200
-          :body {:results results}}))
+          :body (execute targets opts)}))
 
   (GET "/parse" [target]
     {:status 200
@@ -69,13 +97,15 @@
     {:status 200 :body (keys @lead.functions/*fn-registry*)}))
 
 (def not-found (route/not-found "Not Found"))
+
 (defn wrap-exception [f]
   (fn [request]
     (try (f request)
       (catch Exception e
-        (warn e "Excption handling request")
+        (warn e "Exception handling request")
         {:status 500
-         :body {:exception (.getMessage e) :details (ex-data e)}}))))
+         :body   {:unhandled-exception (transform-exception e)
+                  :exceptions (map transform-exception (:exceptions @core/*context*))}}))))
 
 ; TODO i probably shouldn't be writing CORS handling code
 (defn wrap-cors [handler]

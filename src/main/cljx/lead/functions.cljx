@@ -36,7 +36,10 @@
   (try
     (apply apply f args)
     (catch #+clj Throwable #+cljs js/Error t
-      (throw (ex-info (str "Error calling " name ": " (.getMessage t)) {:name name :args args} t)))))
+      (throw (ex-info "Error in Lead function"
+                      {:function-name name
+                       :args args}
+                      t)))))
 
 (defrecord ComplicatedFunctionCall [name f args]
   SeriesSource
