@@ -30,8 +30,7 @@
                                  (.substring name 0 (- (.length name) 1))
                                  name))
                     :is-leaf (= "1" (:is_leaf result))})
-                 (-> response :metrics))))
-  )
+                 (-> response :metrics)))))
 
 (defrecord GraphiteConnector [url]
   Connector

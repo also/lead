@@ -3,6 +3,8 @@
             [lead.parser]
             [lead.functions]))
 
+(def ^:dynamic *configuration*)
+
 (def ^:dynamic *context*)
 
 (defn create-context [] {:exceptions []})

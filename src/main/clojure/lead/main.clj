@@ -1,6 +1,7 @@
 (ns lead.main
   (:gen-class)
   (:require [lead.api :refer [create-routes add-routes *routes*] :as api]
+            [lead.core]
             [lead.connector :refer [set-connector] :as conn]
             [lead.functions :refer [register-fns-from-namespace] :as fns]
             [ring.adapter.jetty :as jetty]))
@@ -8,6 +9,10 @@
 (def ^:dynamic *uri-prefix*)
 (def ^:dynamic *jetty-opts*)
 (def ^:dynamic *handler-wrapper*)
+(def ^:dynamic *configuration*)
+
+(defn update-config [f & args]
+  (apply swap! *configuration* f args))
 
 (defn set-uri-prefix [uri-prefix] (reset! *uri-prefix* uri-prefix))
 (defn set-jetty-opts [opts] (reset! *jetty-opts* opts))
@@ -23,18 +28,21 @@
             *handler-wrapper* (atom nil)
             fns/*fn-registry* (fns/create-registry)
             conn/*connector* (conn/init-connector)
-            *routes* (create-routes)]
+            *routes* (create-routes)
+            *configuration* (atom {})]
     (f)))
 
 (defn create-handler []
   (let [handler (api/create-handler)
         wrapped-handler (if-let [wrapper @*handler-wrapper*] (wrapper handler) handler)]
-    (if-let [uri-prefix @*uri-prefix*]
-      (api/wrap-uri-prefix wrapped-handler uri-prefix)
-      wrapped-handler)))
+    (binding [lead.core/*configuration* @*configuration*]
+      (bound-fn*
+        (if-let [uri-prefix @*uri-prefix*]
+          (api/wrap-uri-prefix wrapped-handler uri-prefix)
+          wrapped-handler)))))
 
 (defn start-server [port]
-  (jetty/run-jetty (bound-fn* (create-handler)) (merge @*jetty-opts* {:port (Integer. port)})))
+  (jetty/run-jetty (create-handler) (merge @*jetty-opts* {:port (Integer. port)})))
 
 (defn -main [& [port config-file]]
   (binding-config
