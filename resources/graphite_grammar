@@ -15,7 +15,7 @@ whitespace = ' ' | '\t'
 
 <sci-number> = (float-number / int-number) ('e' | 'E') integer
 
-string = <'"'> double-string-char+ <'"'> / <"'"> single-string-char+ <"'">
+string = <'"'> double-string-char* <'"'> / <"'"> single-string-char* <"'">
 
 <any> = #'.'
 
