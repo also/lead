@@ -15,7 +15,8 @@
     #+clj [cheshire.core :as cheshire]
     #+clj [clojure.walk])
   #+cljs (:require-macros [lead.functions :refer [leadfn]])
-  #+clj (:require [lead.functions :refer [leadfn]]))
+  #+clj (:require [lead.functions :refer [leadfn]])
+  #+clj (:import [org.apache.commons.math3.stat.descriptive DescriptiveStatistics]))
 
 (defn
   same-depth?
@@ -172,3 +173,26 @@
   map-values-above-to-nil
   [serieses value]
   (replace-serieses-values-with-nil #(<= % value) serieses "removeBelowValue"))
+
+#+clj
+(def statfns
+  {:min (fn min [^DescriptiveStatistics stats] (.getMin stats))
+   :max (fn max [^DescriptiveStatistics stats] (.getMax stats))
+   :50th (fn pct50th [^DescriptiveStatistics stats] (.getPercentile stats 0.5))
+   :75th (fn pct75th [^DescriptiveStatistics stats] (.getPercentile stats 0.75))
+   :95th (fn pct95th [^DescriptiveStatistics stats] (.getPercentile stats 0.95))
+   :99th (fn pct99th [^DescriptiveStatistics stats] (.getPercentile stats 0.99))
+   :999th (fn pct999th [^DescriptiveStatistics stats] (.getPercentile stats 0.999))})
+
+#+clj
+(defn stat-fn [name]
+  ((keyword name) statfns))
+
+#+clj
+(defn apply-fns-to-slice [fns slice]
+  (let [stats (DescriptiveStatistics. (double-array slice))]
+    (map #(% stats) fns)))
+
+#+clj
+(defn apply-desc-stats-r-fns [series n fns]
+  (map (partial apply-fns-to-slice fns) (partition-all n (:values series))))
