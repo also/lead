@@ -165,8 +165,8 @@
 (def statfns
   {:min    (fn min [^DescriptiveStatistics stats] (.getMin stats))
    :max    (fn max [^DescriptiveStatistics stats] (.getMax stats))
-   :first  (fn stats-first [^DescriptiveStatistics stats] (-> stats .getElement 0))
-   :last   (fn stats-last [^DescriptiveStatistics stats] (-> stats .getElement (- (.getN stats) 1)))
+   :first  (fn stats-first [^DescriptiveStatistics stats] (-> stats (.getElement 0)))
+   :last   (fn stats-last [^DescriptiveStatistics stats] (-> stats (.getElement (- (.getN stats) 1))))
    :sum    (fn sum [^DescriptiveStatistics stats] (.getSum stats))
    :mean   (fn mean [^DescriptiveStatistics stats] (.getMean stats))
    :stddev (fn stdddev [^DescriptiveStatistics stats] (.getStandardDeviation stats))
