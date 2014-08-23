@@ -1,10 +1,12 @@
 (ns lead.api
+  (:import (com.fasterxml.jackson.core JsonGenerationException JsonGenerator))
   (:use ring.middleware.params
         ring.middleware.json
         compojure.core
         clojure.tools.logging)
   (:require [compojure.route :as route]
-            [cheshire.generate :refer [add-encoder]]
+            [cheshire.core :refer [generate-string]]
+            [cheshire.generate :as generate]
             [clojure.stacktrace :as stacktrace]
             [lead.functions]
             [lead.parser]
@@ -14,7 +16,23 @@
             [clojure.string :as string]))
 
 ; TODO this is only for exceptions
-(add-encoder clojure.lang.Var #(.writeString %2 (str %1)))
+(generate/add-encoder clojure.lang.Var generate/encode-str)
+(generate/add-encoder clojure.lang.IFn generate/encode-str)
+
+(defrecord SafeJSON [value])
+(generate/add-encoder SafeJSON
+  (fn [safe jg]
+    (let [value (:value safe)
+          json (try
+                  (generate-string value)
+                  (catch JsonGenerationException ex
+                    (generate-string {:exception-serializing-value (str ex)
+                                      :value-pr (pr-str value)})))]
+      (.writeRawValue jg json))))
+
+(def safe-json ->SafeJSON)
+
+(defn safe-json-map [m] (into {} (map (fn [[k v]] [k (safe-json v)]) m)))
 
 (def ^:dynamic *routes*)
 (defn create-routes [] (atom []))
@@ -46,7 +64,7 @@
 
 (defn- transform-inner-exception [^Throwable e]
   {:message (ex-message e)
-   :details (ex-data e)
+   :details (safe-json-map (ex-data e))
    :cause   (if-let [cause (.getCause e)]
               (transform-inner-exception cause))})
 
@@ -104,8 +122,10 @@
       (catch Exception e
         (warn e "Exception handling request")
         {:status 500
-         :body   {:unhandled-exception (transform-exception e)
-                  :exceptions (map transform-exception (:exceptions @core/*context*))}}))))
+         :headers {"Content-Type" "application/json; charset=utf-8"}
+         :body (generate-string
+                 {:unhandled-exception (transform-exception e)
+                  :exceptions          (map transform-exception (:exceptions @core/*context*))})}))))
 
 ; TODO i probably shouldn't be writing CORS handling code
 (defn wrap-cors [handler]
@@ -131,7 +151,6 @@
     (routes handler (apply routes @*routes*) not-found)
     wrap-json-response
     wrap-exception
-    wrap-json-response
     wrap-json-body
     wrap-cors
     wrap-params
