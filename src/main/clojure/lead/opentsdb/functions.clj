@@ -27,7 +27,7 @@
 
 (leadfn
   ^{:args "s"
-    :complicated true}
+    :uses-opts true}
   opentsdb
   [opts metric]
   (let [config (:opentsdb *configuration*)]

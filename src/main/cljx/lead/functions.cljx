@@ -1,8 +1,8 @@
 (ns lead.functions
   #+cljs (:require [clojure.string :as str]))
 
-; A simple function just transforms a series list--it wil be called with any series lists already loaded.
-; A complicated function is responsible calling load-series on it's arguments, so it is able to use or change the options.
+; A simple function just transforms it's input--it wil be called after call is called on all of it's arguments.
+; A complicated function is responsible calling call on it's arguments, so it is able to use or change the options.
 
 #+cljs-macro
 (defmacro leadfn
@@ -15,21 +15,22 @@
   [& args]
   `(defn ~@args))
 
-(defprotocol SeriesSource
-  (load-serieses [this opts]))
+(defprotocol LeadCallable
+  (call [this opts]))
 
-(defrecord StaticSeriesSource [serieses]
-  SeriesSource
-  (load-serieses [this opts] serieses))
+(defrecord ValueCallable [value]
+  LeadCallable
+  (call [this opts] value))
 
-(defn series-source? [x]
-  (satisfies? SeriesSource x))
+(defn lead-callable? [x]
+  (satisfies? LeadCallable x))
 
-(defn load-args [opts args]
-  (map (fn [arg] (if (series-source? arg)
-                   (load-serieses arg opts)
-                   arg))
-       args))
+(defn call-args [opts args]
+  (vec (map (fn [arg]
+          (if (lead-callable? arg)
+            (call arg opts)
+            arg))
+        args)))
 
 (defn call-f
   [name f & args]
@@ -42,15 +43,21 @@
                       t)))))
 
 (defrecord ComplicatedFunctionCall [name f args]
-  SeriesSource
-  (load-serieses [this opts]
+  LeadCallable
+  (call [this opts]
     (call-f name f opts args)))
 
 (defrecord SimpleFunctionCall [name f args]
-  SeriesSource
-  (load-serieses [this opts]
-    (let [loaded-args (load-args opts args)]
-      (call-f name f loaded-args))))
+  LeadCallable
+  (call [this opts]
+    (let [called-args (call-args opts args)]
+      (call-f name f called-args))))
+
+(defrecord SimpleWithOptsFunctionCall [name f args]
+  LeadCallable
+  (call [this opts]
+    (let [called-args (call-args opts args)]
+      (call-f name f opts called-args))))
 
 (declare function-call)
 
@@ -97,8 +104,10 @@
 
 (defn function->source [name f args]
   (if (:complicated (f-meta f))
-    (ComplicatedFunctionCall. name f args)
-    (SimpleFunctionCall. name f args)))
+    (->ComplicatedFunctionCall name f args)
+    (if (:uses-opts (f-meta f))
+      (->SimpleWithOptsFunctionCall name f args)
+      (->SimpleFunctionCall name f args))))
 
 (defn function-call [name args]
   (if-let [f (get-fn name)]
@@ -106,11 +115,18 @@
     (throw (ex-info (str name " is not a function") {:name name}))))
 
 (defn call-function [function opts args]
-  (load-serieses opts (function-call function args)))
+  (call opts (function-call function args)))
 
+(defn uses-opts?
+  [f]
+  (let [meta (f-meta f)]
+    (or (:uses-opts meta)
+        (:complicated meta))))
+
+; TODO this really means no opts
 (defn call-simple-function [function loaded-args]
   (if-let [f (get-fn function)]
-    (if (:complicated (f-meta f))
+    (if (uses-opts? f)
       (throw (ex-info (str function " can't be used in this context") {:name function}))
       (call-f function f loaded-args))
     (throw (ex-info (str function " is not a function") {:name function}))))
@@ -122,4 +138,4 @@
     program))
 
 (defn run [program opts]
-  (load-serieses (build program) opts))
+  (call (build program) opts))

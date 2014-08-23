@@ -58,7 +58,7 @@
 (deftest test-series-source
   (binding [fns/*fn-registry* (fns/create-registry)]
     (fns/register-fns-from-namespace 'lead.builtin-functions)
-    (let [source (fns/->StaticSeriesSource [{:name "", :values  [], :start 1, :end 2, :step 1}])
+    (let [source (fns/->ValueCallable [{:name "", :values  [], :start 1, :end 2, :step 1}])
           fn-source (fns/function-call "removeBelowValue" [source 1])
-          result (fns/load-serieses fn-source {})]
+          result (fns/call fn-source {})]
      (is (= {:name "removeBelowValue()", :values  [], :start 1, :end 2, :step 1} (first result))))))
