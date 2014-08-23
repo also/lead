@@ -163,23 +163,79 @@
 
 #+clj
 (def statfns
-  {:min (fn min [^DescriptiveStatistics stats] (.getMin stats))
-   :max (fn max [^DescriptiveStatistics stats] (.getMax stats))
-   :50th (fn pct50th [^DescriptiveStatistics stats] (.getPercentile stats 0.5))
-   :75th (fn pct75th [^DescriptiveStatistics stats] (.getPercentile stats 0.75))
-   :95th (fn pct95th [^DescriptiveStatistics stats] (.getPercentile stats 0.95))
-   :99th (fn pct99th [^DescriptiveStatistics stats] (.getPercentile stats 0.99))
-   :999th (fn pct999th [^DescriptiveStatistics stats] (.getPercentile stats 0.999))})
+  {:min    (fn min [^DescriptiveStatistics stats] (.getMin stats))
+   :max    (fn max [^DescriptiveStatistics stats] (.getMax stats))
+   :first  (fn stats-first [^DescriptiveStatistics stats] (-> stats .getElement 0))
+   :last   (fn stats-last [^DescriptiveStatistics stats] (-> stats .getElement (- (.getN stats) 1)))
+   :sum    (fn sum [^DescriptiveStatistics stats] (.getSum stats))
+   :mean   (fn mean [^DescriptiveStatistics stats] (.getMean stats))
+   :stddev (fn stdddev [^DescriptiveStatistics stats] (.getStandardDeviation stats))
+   :50th   (fn pct50th [^DescriptiveStatistics stats] (.getPercentile stats 0.5))
+   :75th   (fn pct75th [^DescriptiveStatistics stats] (.getPercentile stats 0.75))
+   :95th   (fn pct95th [^DescriptiveStatistics stats] (.getPercentile stats 0.95))
+   :99th   (fn pct99th [^DescriptiveStatistics stats] (.getPercentile stats 0.99))
+   :999th  (fn pct999th [^DescriptiveStatistics stats] (.getPercentile stats 0.999))})
 
 #+clj
 (defn stat-fn [name]
-  ((keyword name) statfns))
+  [name ((keyword name) statfns)])
 
 #+clj
-(defn apply-fns-to-slice [fns slice]
-  (let [stats (DescriptiveStatistics. (double-array slice))]
-    (map #(% stats) fns)))
+(defn apply-desc-stats-r-fns [fns n series]
+  (let [n-slices (Math/ceil (/ (count (:values series)) n))
+        bucketses (vec (map (fn [_] (make-array Number n-slices)) fns))]
+    (dorun (map-indexed (fn [i slice]
+                    (let [stats (DescriptiveStatistics. (double-array slice))]
+                      (dorun
+                        (map #(aset %1 i (%2 stats))
+                             bucketses (map second fns)))))
+                  (partition-all n (:values series))))
+    (map
+      (fn [buckets [name _]]
+        {:name (str "descriptiveStatsR(" (:name series) ", " n ", '" name "')")
+         :start (:start series)
+         :end (:end series)
+         :step (* n (:step series))
+         :values (seq buckets)})
+      bucketses fns)))
 
 #+clj
-(defn apply-desc-stats-r-fns [series n fns]
-  (map (partial apply-fns-to-slice fns) (partition-all n (:values series))))
+(leadfn
+  ^{:args "Tis*"
+    :aliases ["descriptiveStatsR"]}
+  descriptive-stats-regular
+  [serieses n & names]
+  (let [fns (map stat-fn names)]
+    (flatten (map (partial apply-desc-stats-r-fns fns n) serieses))))
+
+#+clj
+(defn apply-desc-stats-i-fns [fns interval series]
+  (let [start (:start series)
+        n-slices (quot (- (:end series) start) interval)
+        bucketses (vec (map (fn [_] (make-array Number n-slices)) fns))]
+    (doseq [slice (partition-by (fn [[ts _]] (quot (- ts start) interval)) (:values series))]
+      (let [[[ts _] & _] slice
+            i (quot (- ts start) interval)]
+        (if (and (>= i 0)
+                 (< i n-slices))
+          (let [stats (DescriptiveStatistics. (double-array (map second slice)))]
+            (dorun
+              (map #(aset %1 i (%2 stats))
+                   bucketses (map second fns)))))))
+    (map
+      (fn [buckets [name _]]
+        {:name (str "descriptiveStatsI(" (:name series) ", " interval ", '" name "')")
+         :start (:start series)
+         :end (:end series)
+         :step interval
+         :values (seq buckets)})
+      bucketses fns)))
+
+#+clj
+(leadfn
+  ^{:args "Tis*"
+    :aliases ["descriptiveStatsI"]}
+  descriptive-stats-irregular
+  [serieses interval & names]
+  (let [fns (map stat-fn names)]
+    (flatten (map (partial apply-desc-stats-i-fns fns interval) serieses))))
