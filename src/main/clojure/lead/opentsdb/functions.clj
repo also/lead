@@ -25,6 +25,12 @@
    :values (:dps opentsdb-result)
    :meta {:opentsdb (dissoc opentsdb-result :dps)}})
 
+(defn to-opentsdb-query [o]
+  (cond
+    (vector? o) {:queries o}
+    (:metric o) {:queries [o]}
+    :else o))
+
 (leadfn
   ^{:args "s"                                               ; s or o?
     :uses-opts true}
@@ -41,8 +47,9 @@
                   {:method :post
                    :content-type :json
                    :query-params {:arrays true}
-                   :form-params (assoc metric :start (:start opts)
-                                              :end (:end opts))})
+                   :form-params (assoc (to-opentsdb-query metric)
+                                  :start (:start opts)
+                                  :end (:end opts))})
         response (http/request (merge (:query-opts config)
                                       request
                                       {:url url
