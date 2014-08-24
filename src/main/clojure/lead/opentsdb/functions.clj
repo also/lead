@@ -26,19 +26,28 @@
    :meta {:opentsdb (dissoc opentsdb-result :dps)}})
 
 (leadfn
-  ^{:args "s"
+  ^{:args "s"                                               ; s or o?
     :uses-opts true}
   opentsdb
   [opts metric]
-  (let [config (:opentsdb *configuration*)]
-    (map (partial opentsdb-result->series opts)
-         (:body (http/get (str (:base-url config) "/api/query")
-                          (merge (:query-opts config)
-                                 {:as           :json
-                                  :query-params {"start"  (:start opts)
-                                                 "end"    (:end opts)
-                                                 "m"      metric
-                                                 "arrays" true}}))))))
+  (let [config (:opentsdb *configuration*)
+        url (str (:base-url config) "/api/query")
+        request (if (string? metric)
+                  {:method :get
+                   :query-params {"start"  (:start opts)
+                                  "end"    (:end opts)
+                                  "m"      metric
+                                  "arrays" true}}
+                  {:method :post
+                   :content-type :json
+                   :query-params {:arrays true}
+                   :form-params (assoc metric :start (:start opts)
+                                              :end (:end opts))})
+        response (http/request (merge (:query-opts config)
+                                      request
+                                      {:url url
+                                       :as  :json}))]
+    (map (partial opentsdb-result->series opts) (:body response))))
 
 (leadfn
   ^{:args "Ii"
