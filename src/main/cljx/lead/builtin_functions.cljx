@@ -64,8 +64,8 @@
     :complicated true
     :aliases ["param"]}
   param-value
-  [opts name]
-  (get (:params opts) name))
+  [opts & name]
+  (get-in (:params opts) name))
 
 #+clj
 (leadfn
