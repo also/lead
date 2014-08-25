@@ -19,6 +19,9 @@
 (generate/add-encoder clojure.lang.Var generate/encode-str)
 (generate/add-encoder clojure.lang.IFn generate/encode-str)
 
+(generate/add-encoder Class generate/encode-str)
+(generate/add-encoder clojure.lang.Namespace generate/encode-str)
+
 (defrecord SafeJSON [value])
 (generate/add-encoder SafeJSON
   (fn [safe jg]
@@ -112,7 +115,7 @@
      :body (lead.parser/parse target)})
 
   (GET "/functions" []
-    {:status 200 :body (keys @lead.functions/*fn-registry*)}))
+    {:status 200 :body (lead.functions/function-info)}))
 
 (def not-found (route/not-found "Not Found"))
 

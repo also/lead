@@ -15,7 +15,8 @@
     [org.clojure/tools.logging "0.2.6"]
     [com.cemerick/clojurescript.test "0.2.1"]
     [joda-time/joda-time "2.3"]
-    [com.google.guava/guava "15.0"]]
+    [com.google.guava/guava "15.0"]
+    [prismatic/schema "0.2.6"]]
   :main ^:skip-aot lead.main
   :aot [lead.matcher]
   :plugins [[com.keminglabs/cljx "0.4.0"]

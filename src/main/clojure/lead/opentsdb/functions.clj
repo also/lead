@@ -1,7 +1,9 @@
 (ns lead.opentsdb.functions
   (:require [lead.main]
             [lead.core :refer [*configuration*]]
-            [lead.functions :refer [leadfn]]
+            [lead.series :as series]
+            [schema.core :as sm]
+            [lead.functions :refer [leadfn] :as fns]
             [clj-http.client :as http]
             [clojure.string :as string]
             [lead.builtin-functions :refer [map-serieses]]))
@@ -28,14 +30,30 @@
 (defn to-opentsdb-query [o]
   (cond
     (vector? o) {:queries o}
-    (:metric o) {:queries [o]}
+    (get o "metric" (:metric o)) {:queries [o]}
     :else o))
+
+(sm/defschema
+  OpenTSDBSubquery
+  {(sm/required-key "aggregator") sm/Str
+   (sm/required-key "metric") sm/Str
+   (sm/optional-key :tags) {sm/Str sm/Str}
+   sm/Str sm/Any})
+
+(sm/defschema
+  OpenTSDBQuery
+  {(sm/required-key "queries") [(sm/one OpenTSDBSubquery "first") OpenTSDBSubquery]})
+
+#_(sm/defschema
+  LeadOpenTSDBQuery
+  (sm/conditional
+    #(vector? %) ))
 
 (leadfn
   ^{:args "s"                                               ; s or o?
     :uses-opts true}
-  opentsdb
-  [opts metric]
+  opentsdb :- series/IrregularSeriesList
+  [opts :- fns/Opts metric :- OpenTSDBQuery]
   (let [config (:opentsdb *configuration*)
         url (str (:base-url config) "/api/query")
         request (if (string? metric)
@@ -59,7 +77,8 @@
 (leadfn
   ^{:args "Ii"
     :aliases ["forceInterval"]}
-  force-interval [serieses interval]
+  force-interval :- series/RegularSeriesList
+  [serieses :- series/IrregularSeriesList interval :- sm/Int]
   (map
     (fn [series]
       (let [start (:start series)

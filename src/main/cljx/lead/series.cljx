@@ -1,7 +1,8 @@
 (ns lead.series
   (:require
     [lead.math :as math]
-    [clojure.string :as string]))
+    [clojure.string :as string]
+    [schema.core :as sm]))
 
 ; A series has these attributes:
 ;  :values           a list of values
@@ -19,6 +20,30 @@
 
 (defprotocol TimeSeries
   (slice [this start end]))
+
+(sm/defschema RegularSeriesValues
+              sm/Any)
+
+(sm/defschema IrregularSeriesValues
+              sm/Any)
+
+(sm/defschema RegularSeries
+  {:start sm/Int
+   :end sm/Int
+   :step sm/Int
+   :values RegularSeriesValues
+   sm/Keyword sm/Any})
+
+(sm/defschema RegularSeriesList [RegularSeries])
+
+(sm/defschema
+  IrregularSeries
+    {:start  sm/Int
+     :end    sm/Int
+     :values IrregularSeriesValues
+     sm/Keyword sm/Any})
+
+(sm/defschema IrregularSeriesList [IrregularSeries])
 
 ; TODO these are probably wrong
 (defn slice-series-start

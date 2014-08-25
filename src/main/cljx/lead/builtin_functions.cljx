@@ -3,6 +3,7 @@
     [lead.math :as math]
     [clojure.string :as string]
     [lead.functions :as fns]
+    [schema.core :as sm]
     [lead.series :refer [consolidate-series-values
                          normalize-serieses
                          safe-average
@@ -10,7 +11,8 @@
                          safe-min
                          safe-max
                          name->path
-                         path->name]]
+                         path->name
+                         RegularSeriesList]]
     #+clj [lead.connector :as connector]
     #+clj [cheshire.core :as cheshire]
     #+clj [clojure.walk])
@@ -60,115 +62,100 @@
   (map #(assoc % :name (str name \( (:name %) \)) :values (map f (:values %))) serieses))
 
 (leadfn
-  ^{:args "s"
-    :complicated true
+  ^{:uses-opts true
     :aliases ["param"]}
   param-value
-  [opts & name]
+  [opts :- fns/Opts & name :- [sm/Any]]                       ; TODO should be (sm/either sm/Str sm/Int)
   (get-in (:params opts) name))
 
 #+clj
 (leadfn
-  ^{:args    "s"
-    :aliases ["parseJson"]}
+  ^{:aliases ["parseJson"]}
   parse-json
-  [string]
+  [string :- sm/Str]
   (cheshire/parse-string string))
 
 (leadfn
-  ^{:args "?"}
   serieses
-  [o]
+  [o :- sm/Any]
   (if (map? o)
     (clojure.walk/keywordize-keys o)
     (map clojure.walk/keywordize-keys o)))
 
 (leadfn
-  ^{:args "T"
-    :aliases ["avg" "averageSeries"]}
+  ^{:aliases ["avg" "averageSeries"]}
   avg-serieses
-  [serieses]
+  [serieses :- RegularSeriesList]
   (sliced serieses safe-average "averageSeries"))
 
 (leadfn
-  ^{:args "T"
-    :aliases ["min" "minSeries"]}
+  ^{:aliases ["min" "minSeries"]}
   min-serieses
-  [serieses]
+  [serieses :- RegularSeriesList]
   (sliced serieses safe-min "minSeries"))
 
 (leadfn
-  ^{:args "T"
-    :aliases ["max" "maxSeries"]}
+  ^{:aliases ["max" "maxSeries"]}
   max-serieses
-  [serieses]
+  [serieses :- RegularSeriesList]
   (sliced serieses safe-max "maxSeries"))
 
 (leadfn
-  ^{:args "T"
-    :aliases ["sum" "sumSeries"]}
+  ^{:aliases ["sum" "sumSeries"]}
   sum-serieses
-  [serieses]
+  [serieses :- RegularSeriesList]
   (sliced serieses safe-sum "sumSeries"))
 
 (leadfn
-  ^{:args "Tis"
-    :aliases ["groupByNode"]}
+  ^{:aliases ["groupByNode"]}
   group-serieses-by-node
-  [serieses node-num aggregate]
+  [serieses :- RegularSeriesList node-num :- sm/Int aggregate :- sm/Str]
   (let [groups (group-by #(nth (name->path (:name %)) node-num) serieses)]
     (flatten (map #(fns/call-simple-function aggregate [%]) (vals groups)))))
 
 (leadfn
-  ^{:args "T*"
-    :aliases ["flatten" "group"]}
+  ^{:aliases ["flatten" "group"]}
   flatten-serieseses
-  [& serieses]
+  [& serieses :- [RegularSeriesList]]
   (flatten serieses))
 
 (leadfn
-  ^{:args "Ti"
-    :aliases ["offset"]}
+  ^{:aliases ["offset"]}
   increment-serieses
-  [serieses amount]
+  [serieses :- RegularSeriesList amount :- sm/Num]
   (map-serieses serieses #(if % (+ amount %)) "offset"))
 
 (leadfn
-  ^{:args "Ti"
-    :aliases ["scale"]}
+  ^{:aliases ["scale"]}
   scale-serieses
-  [serieses factor]
+  [serieses :- RegularSeriesList factor :- sm/Num]
   (map-serieses serieses #(if % (* factor %)) "scale"))
 
 #+clj
 (leadfn
-  ^{:args "s"
-    :aliases ["load"]
-    :complicated true}
+  ^{:aliases ["load"]
+    :uses-opts true}
   load-from-connector
-  [opts target]
+  [opts :- fns/Opts target :- sm/Str]
   (connector/load @connector/*connector* target opts))
 
 (leadfn
-  ^{:args "Ts"
-    :aliases ["alias"]}
+  ^{:aliases ["alias"]}
   rename-serieses
-  [serieses name]
+  [serieses :- RegularSeriesList name :- sm/Str]
   (map #(assoc % :name name) serieses))
 
 (defn replace-serieses-values-with-nil [f serieses name]
   (map-serieses serieses #(if (f %) %) name))
 
 (leadfn
-  ^{:args "Ti"
-    :aliases ["removeBelowValue"]}
+  ^{:aliases ["removeBelowValue"]}
   map-values-below-to-nil
-  [serieses value]
+  [serieses :- RegularSeriesList value :- sm/Num]
   (replace-serieses-values-with-nil #(>= % value) serieses "removeBelowValue"))
 
 (leadfn
-  ^{:args "Ti"
-    :aliases ["removeAboveValue"]}
+  ^{:aliases ["removeAboveValue"]}
   map-values-above-to-nil
-  [serieses value]
+  [serieses :- RegularSeriesList value :- sm/Num]
   (replace-serieses-values-with-nil #(<= % value) serieses "removeBelowValue"))
