@@ -73,21 +73,3 @@
                                       {:url url
                                        :as  :json}))]
     (map (partial opentsdb-result->series opts) (:body response))))
-
-(leadfn
-  ^{:args "Ii"
-    :aliases ["forceInterval"]}
-  force-interval :- series/RegularSeriesList
-  [serieses :- series/IrregularSeriesList interval :- sm/Int]
-  (map
-    (fn [series]
-      (let [start (:start series)
-            bucket-count (quot (- (:end series) start) interval)
-            buckets (make-array Number bucket-count)]
-        (doseq [[timestamp value] (:values series)]
-          (let [bucket-index (quot (- timestamp start) interval)]
-            (if (and (>= bucket-index 0)
-                     (< bucket-index bucket-count))
-              (aset buckets bucket-index value))))
-        (assoc series :step interval :values (seq buckets))))
-    serieses))

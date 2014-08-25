@@ -12,7 +12,8 @@
                          safe-max
                          name->path
                          path->name
-                         RegularSeriesList]]
+                         RegularSeriesList
+                         IrregularSeriesList]]
     #+clj [lead.connector :as connector]
     #+clj [cheshire.core :as cheshire]
     #+clj [clojure.walk])
@@ -239,3 +240,20 @@
   [serieses interval & names]
   (let [fns (map stat-fn names)]
     (flatten (map (partial apply-desc-stats-i-fns fns interval) serieses))))
+
+(leadfn
+  ^{:aliases ["forceInterval"]}
+  force-interval :- RegularSeriesList
+  [serieses :- IrregularSeriesList interval :- sm/Int]
+  (map
+    (fn [series]
+      (let [start (:start series)
+            bucket-count (quot (- (:end series) start) interval)
+            buckets (make-array Number bucket-count)]
+        (doseq [[timestamp value] (:values series)]
+          (let [bucket-index (quot (- timestamp start) interval)]
+            (if (and (>= bucket-index 0)
+                     (< bucket-index bucket-count))
+              (aset buckets bucket-index value))))
+        (assoc series :step interval :values (seq buckets))))
+    serieses))
