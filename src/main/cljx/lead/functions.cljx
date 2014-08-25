@@ -2,12 +2,7 @@
   #+cljs (:require [clojure.string :as string]
                    [schema.macros :as sm])
   #+clj
-  (:require [schema.core :as sm]
-            [schema.core :as sm]
-            [schema.core :as sm]
-            [schema.core :as sm]
-            [schema.core :as sm]
-            [schema.core :as sm]))
+  (:require [schema.core :as sm]))
 
 ; A simple function just transforms its input--it wil be called after call is called on all of its arguments.
 ; A complicated function is responsible for calling call on its arguments, so it is able to use or change the options.
