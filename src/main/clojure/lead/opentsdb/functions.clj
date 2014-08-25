@@ -44,16 +44,10 @@
   OpenTSDBQuery
   {(sm/required-key "queries") [(sm/one OpenTSDBSubquery "first") OpenTSDBSubquery]})
 
-#_(sm/defschema
-  LeadOpenTSDBQuery
-  (sm/conditional
-    #(vector? %) ))
-
 (leadfn
-  ^{:args "s"                                               ; s or o?
-    :uses-opts true}
+  ^:uses-opts
   opentsdb :- series/IrregularSeriesList
-  [opts :- fns/Opts metric :- OpenTSDBQuery]
+  [opts :- fns/Opts metric :- OpenTSDBQuery]                ; TODO should take string or OpenTSDBQuery or OpenTSDBSubquery or [OpenTSDBSubquery]
   (let [config (:opentsdb *configuration*)
         url (str (:base-url config) "/api/query")
         request (if (string? metric)

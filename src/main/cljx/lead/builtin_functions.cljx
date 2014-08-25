@@ -202,10 +202,9 @@
 
 #+clj
 (leadfn
-  ^{:args "Tis*"
-    :aliases ["descriptiveStatsR"]}
+  ^{:aliases ["descriptiveStatsR"]}
   descriptive-stats-regular
-  [serieses n & names]
+  [serieses :- RegularSeriesList n :- sm/Int & names :- [sm/Str]]
   (let [fns (map stat-fn names)]
     (flatten (map (partial apply-desc-stats-r-fns fns n) serieses))))
 
@@ -234,10 +233,9 @@
 
 #+clj
 (leadfn
-  ^{:args "Tis*"
-    :aliases ["descriptiveStatsI"]}
+  ^{:aliases ["descriptiveStatsI"]}
   descriptive-stats-irregular
-  [serieses interval & names]
+  [serieses :- IrregularSeriesList interval :- sm/Int & names :- [sm/Str]]
   (let [fns (map stat-fn names)]
     (flatten (map (partial apply-desc-stats-i-fns fns interval) serieses))))
 
