@@ -2,14 +2,15 @@
   #+cljs (:require [clojure.string :as string]
                    [schema.macros :as sm])
   #+clj
-  (:require [schema.core :as sm]))
+  (:require [schema.core :as sm]
+            [schema.macros]))
 
 ; A simple function just transforms its input--it wil be called after call is called on all of its arguments.
 ; A complicated function is responsible for calling call on its arguments, so it is able to use or change the options.
 
 (defmacro leadfn
   [name & args]
-  `(sm/defn ~(vary-meta name assoc :leadfn true) ~@args))
+  `(schema.macros/defn ~(vary-meta name assoc :leadfn true) ~@args))
 
 #+cljs
 (defn f-meta [f] (aget f "meta"))
