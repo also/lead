@@ -2,7 +2,11 @@
   (:require
     [lead.math :as math]
     [clojure.string :as string]
-    [schema.core :as sm]))
+    [schema.core :as s]
+    #+clj
+    [schema.macros :as sm])
+  #+cljs
+  (:require-macros [schema.macros :as sm]))
 
 ; A series has these attributes:
 ;  :values           a list of values
@@ -22,26 +26,26 @@
   (slice [this start end]))
 
 (sm/defschema RegularSeriesValues
-              sm/Any)
+              s/Any)
 
 (sm/defschema IrregularSeriesValues
-              sm/Any)
+              s/Any)
 
 (sm/defschema RegularSeries
-  {:start sm/Int
-   :end sm/Int
-   :step sm/Int
+  {:start s/Int
+   :end s/Int
+   :step s/Int
    :values RegularSeriesValues
-   sm/Keyword sm/Any})
+   s/Keyword s/Any})
 
 (sm/defschema RegularSeriesList [RegularSeries])
 
 (sm/defschema
   IrregularSeries
-    {:start  sm/Int
-     :end    sm/Int
+    {:start  s/Int
+     :end    s/Int
      :values IrregularSeriesValues
-     sm/Keyword sm/Any})
+     s/Keyword s/Any})
 
 (sm/defschema IrregularSeriesList [IrregularSeries])
 

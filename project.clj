@@ -28,17 +28,10 @@
   :javac-options ["-target" "1.6" "-source" "1.6"]
   :cljx {:builds [{:source-paths ["src/main/cljx"]
                    :output-path "target/classes"
-                   :rules {:filetype "clj"
-                           :features #{"clj-macro" "clj"}
-                           :transforms []}}
+                   :rules :clj}
                   {:source-paths ["src/main/cljx"]
                    :output-path "target/generated/cljs"
                    :rules :cljs}
-                  {:source-paths ["src/main/cljx"]
-                   :output-path "target/generated/clj"
-                   :rules {:filetype "clj"
-                           :features #{"cljs-macro" "clj"}
-                           :transforms []}}
                   {:source-paths ["src/test/cljx"]
                    :output-path "target/test-classes"
                    :rules :clj}
@@ -50,12 +43,12 @@
   ;; cljx should probably support %s or another way to reference project configuration
   :profiles {:test {:target-path "target"
                     :test-paths ["target/test-classes"]}
-             :cljs {:cljsbuild {:builds [{:source-paths ["target/generated/cljs" "target/generated/clj"]
+             :cljs {:cljsbuild {:builds [{:source-paths ["target/generated/cljs" "target/classes"]
                                           :compiler {:optimizations :none
                                                      :pretty-print true
                                                      :output-dir "target/js"
                                                      :output-to "target/js/index.js" }}
-                                         {:source-paths ["target/generated/cljs" "target/generated/clj" "target/generated/test-cljs" "target/test-classes"]
+                                         {:source-paths ["target/generated/cljs" "target/classes" "target/generated/test-cljs" "target/test-classes"]
                                           :compiler {:optimizations :none
                                                      :pretty-print true
                                                      :output-dir "target/test-js"

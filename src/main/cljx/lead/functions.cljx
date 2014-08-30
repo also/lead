@@ -1,16 +1,17 @@
 (ns lead.functions
   #+cljs (:require [clojure.string :as string]
-                   [schema.macros :as sm])
+                   [schema.core :as s])
+  #+cljs (:require-macros [schema.macros :as sm])
   #+clj
-  (:require [schema.core :as sm]
-            [schema.macros]))
+  (:require [schema.core :as s]
+            [schema.macros :as sm]))
 
 ; A simple function just transforms its input--it wil be called after call is called on all of its arguments.
 ; A complicated function is responsible for calling call on its arguments, so it is able to use or change the options.
 
 (defmacro leadfn
   [name & args]
-  `(schema.macros/defn ~(vary-meta name assoc :leadfn true) ~@args))
+  `(sm/defn ~(vary-meta name assoc :leadfn true) ~@args))
 
 #+cljs
 (defn f-meta [f] (aget f "meta"))
@@ -26,10 +27,10 @@
 
 (sm/defschema
   Opts
-  {:start sm/Int
-   :end sm/Int
-   :params {sm/Any sm/Any}
-   sm/Keyword sm/Any})
+  {:start s/Int
+   :end s/Int
+   :params {s/Any s/Any}
+   s/Keyword s/Any})
 
 (defprotocol LeadCallable
   (call [this opts]))
@@ -92,15 +93,15 @@
 (defn create-registry [] (atom {}))
 
 (defn simplify-schema [schema]
-  (if-let [name (sm/schema-name schema)]
+  (if-let [name (s/schema-name schema)]
     name
     (if (vector? schema)
       (vec (map simplify-schema schema))
-      (sm/explain schema))))
+      (s/explain schema))))
 
 (defn simplify-function-schema [f]
   (if-let [schema (:schema (f-meta f))]
-    {:explain (-> schema sm/explain pr-str)
+    {:explain (-> schema s/explain pr-str)
       :input  (let [[input] (:input-schemas schema)
                    [first [last]] (split-with #(instance? schema.core.One %) input)
                    first (if (uses-opts? f) (rest first) first)]
