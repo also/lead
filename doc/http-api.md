@@ -29,5 +29,97 @@ Parameters:
 Returns:
 
 ```json
-[{"name": "metric.path", "start": 1412136000, "end": 1412222400, "step": 60, "values": [0.0, 0.1, 0.2...]}]
+[
+  {
+    "name": "metric.path",
+    "start": 1412136000,
+    "end": 1412222400,
+    "step": 60,
+    "values": [
+      0,
+      0.1,
+      0.2
+    ]
+  }
+]
+```
+
+## `GET /execute`
+
+Parameters:
+
+Same as `GET /render`
+
+Returns:
+
+```json
+{
+  "opts": {
+    "params": {},
+    "now": 1409418978,
+    "start": 1409332578,
+    "end": 1409418978
+  },
+  "results": {
+    "randomWalkFunction('random walk')": [
+      {
+        "name": "random walk",
+        "start": 1409332578,
+        "end": 1409418978,
+        "step": 60,
+        "values": [
+          0,
+          -0.09634609011669037,
+          -0.3853613444125503,
+          -0.45663534456644406
+        ]
+      }
+    ]
+  },
+  "exceptions": []
+}
+```
+
+
+## `POST /execute`
+
+Parameters:
+
+Same as `GET /execute`, in the JSON POST body.
+
+Returns:
+
+Same as `GET /execute`
+
+
+## `GET /functions`
+
+Parameters:
+
+None
+
+Returns:
+
+```json
+{
+  "min": {
+    "ns": "lead.builtin-functions",
+    "file": "lead/builtin_functions.clj",
+    "name": "min-serieses",
+    "line": 93,
+    "aliases": [
+      "min",
+      "minSeries"
+    ],
+    "schema": {
+      "input": {
+        "first": [
+          "RegularSeriesList"
+        ],
+        "last": null
+      },
+      "output": "RegularSeriesList"
+    }
+  },
+}
 ```
