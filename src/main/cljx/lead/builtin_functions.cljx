@@ -247,7 +247,7 @@
     (fn [series]
       (let [start (:start series)
             bucket-count (quot (- (:end series) start) interval)
-            buckets (make-array Number bucket-count)]
+            buckets (make-array #+clj Number bucket-count)]
         (doseq [[timestamp value] (:values series)]
           (let [bucket-index (quot (- timestamp start) interval)]
             (if (and (>= bucket-index 0)
