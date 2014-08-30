@@ -120,6 +120,6 @@ Returns:
       },
       "output": "RegularSeriesList"
     }
-  },
+  }
 }
 ```
