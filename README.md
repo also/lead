@@ -6,7 +6,7 @@ Lead ~~is~~ will be a [Graphite](http://graphite.readthedocs.org/en/latest/overv
 
 Graphite provides a rich set of functions to apply to time series, but couples this to a primitive user interface and storage engine. Lead aims to replace all three.
 
-If you're already invested in Graphite, you can use [lead-graphite-server](https://github.com/also/lead-graphite-server) to expose any time-series data to Graphite. For example, you could apply Graphite function to Amazon CloudWatch data, or incorporate a new data store, like [OpenTSDB](http://opentsdb.net/).
+If you're already invested in Graphite, you can use [lead-graphite-server](https://github.com/also/lead-graphite-server) to expose any time-series data to Graphite. For example, you could apply Graphite function to Amazon CloudWatch data, or incorporate a new data store, like OpenTSDB.
 
 If you're happy with Graphite's Carbon data storage, you can use Lead's implementation of the Graphite functions, while using one of the many existing [Graphite UI alternatives](http://graphite.readthedocs.org/en/latest/tools.html), including [lead.js](https://github.com/also/lead.js/blob/master/docs/quickstart.md), a console for exploring Graphite data.
 
@@ -18,6 +18,7 @@ Lead can fetch data from these sources:
 
 * Graphite, using [lead.graphite.connector](src/main/clojure/lead/graphite/connector.clj)
 * [Amazon CloudWatch](http://aws.amazon.com/cloudwatch/), using [lead-cloudwatch](https://github.com/also/lead-cloudwatch)
+* [OpenTSDB](http://opentsdb.net/), using the [opentsdb](src/main/clojure/lead/opentsdb/functions.clj) function
 * Anything that implements the Lead [HTTP API](doc/http-api.md), using [lead.connector.remote](src/main/clojure/lead/connector.clj)
 
 ## Installation and Configuration
@@ -44,5 +45,4 @@ Extend [Connector](src/main/clojure/lead/connector.clj). See [GraphiteConnector]
 
 Lead is still experimental, but it can already fetch data from several sources. Soon, it will be expanded to directly support:
 
-* OpenTSDB
 * [ElasticSearch](http://www.elasticsearch.org/)
