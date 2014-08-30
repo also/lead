@@ -11,7 +11,11 @@
 
 (defmacro leadfn
   [name & args]
-  `(sm/defn ~(vary-meta name assoc :leadfn true) ~@args))
+  `(sm/if-cljs
+     (do
+       (sm/defn ~name ~@args)
+       (aset ~name "meta" ~(assoc (meta name) :name (str name) :leadfn true)))
+     (sm/defn ~(vary-meta name assoc :leadfn true) ~@args)))
 
 #+cljs
 (defn f-meta [f] (aget f "meta"))
