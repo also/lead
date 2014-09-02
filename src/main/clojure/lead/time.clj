@@ -43,7 +43,7 @@
 (defn parse-time
   [s ^DateTime now]
   (cond
-    (re-matches #"\d+" s) (seconds->DateTime (Integer. s))
+    (or (integer? s) (re-matches #"\d+" s)) (seconds->DateTime (Integer. s))
     (= "now" s) now
     (= "midnight" s) (.withTimeAtStartOfDay now)
     :else (if-let [period (parse-period s)]
