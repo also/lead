@@ -47,7 +47,7 @@
 (leadfn
   ^:uses-opts
   opentsdb :- series/IrregularSeriesList
-  [opts :- fns/Opts metric :- OpenTSDBQuery]                ; TODO should take string or OpenTSDBQuery or OpenTSDBSubquery or [OpenTSDBSubquery]
+  [opts :- fns/Opts metric :- (sm/either sm/Str OpenTSDBQuery OpenTSDBSubquery)]
   (let [config (:opentsdb *configuration*)
         url (str (:base-url config) "/api/query")
         request (if (string? metric)
