@@ -15,6 +15,10 @@
   [^Duration duration]
   (-> duration .getMillis (quot 1000)))
 
+(defn Period->seconds
+  [^Period period]
+  (-> period .toStandardDuration .getMillis (quot 1000)))
+
 (def period-prefixes
   {"s" (DurationFieldType/seconds)
    "min" (DurationFieldType/minutes)
@@ -34,11 +38,22 @@
 (defn parse-period
   ^Period
   [s]
-  (let [[match sign o unit] (re-matches #"([+-])?(\d+)([a-zA-Z]+)" s)]
+  (let [[match o unit] (re-matches #"(\d+)([a-zA-Z]+)" s)]
     (if match
-      (let [offset (* (Integer. o) (if (= "+" sign) 1 -1))]
-        (if-let [field (duration-field-for-unit unit)]
-          (.withField Period/ZERO field (long offset)))))))
+      (if-let [field (duration-field-for-unit unit)]
+        (.withField Period/ZERO field (Long. o))))))
+
+(defn parse-offset
+  ^Period
+  [s]
+  (let [[sign p] (if-let [sign (#{\+ \-} (first s))]
+                        [sign (.substring s 1)]
+                        [\- s])
+        period (parse-period p)]
+    (if period
+      (if (= \- sign)
+        (.negated period)
+        period))))
 
 (defn parse-time
   [s ^DateTime now]
@@ -46,6 +61,7 @@
     (or (integer? s) (re-matches #"\d+" s)) (seconds->DateTime (Integer. s))
     (= "now" s) now
     (= "midnight" s) (.withTimeAtStartOfDay now)
-    :else (if-let [period (parse-period s)]
-            (.plus now period)
-            (throw (ex-info "invalid time string" {:string s})))))
+    :else (if-let [offset (parse-offset s)]
+            (.plus now offset)
+            (throw (ex-info "invalid time string" {:type :invalid-input
+                                                   :string s})))))

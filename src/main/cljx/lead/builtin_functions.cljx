@@ -3,6 +3,8 @@
     [lead.math :as math]
     [clojure.string :as string]
     [lead.functions :as fns]
+    [lead.series :as series]
+    [lead.time :as time]
     [schema.core :as sm]
     [lead.series :refer [consolidate-series-values
                          normalize-serieses
@@ -179,11 +181,15 @@
 
 #+clj
 (defn stat-fn [name]
-  [name ((keyword name) statfns)])
+  (if-let [statfn ((keyword name) statfns)]
+    [name statfn]
+    (throw (ex-info "invalid statistic function name" {:type :invalid-input
+                                                       :input name}))))
 
 #+clj
-(defn apply-desc-stats-r-fns [fns n series]
-  (let [n-slices (Math/ceil (/ (count (:values series)) n))
+(defn apply-desc-stats-r-fns [fns interval series]
+  (let [n (quot interval (:step series))
+        n-slices (Math/ceil (/ (count (:values series)) n))
         bucketses (vec (map (fn [_] (make-array Number n-slices)) fns))]
     (dorun (map-indexed (fn [i slice]
                     (let [stats (DescriptiveStatistics. (double-array slice))]
@@ -193,20 +199,12 @@
                   (partition-all n (:values series))))
     (map
       (fn [buckets [name _]]
-        {:name (str "descriptiveStatsR(" (:name series) ", " n ", '" name "')")
+        {:name (str "descriptiveStats(" (:name series) ", " n ", '" name "')")
          :start (:start series)
          :end (:end series)
          :step (* n (:step series))
          :values (seq buckets)})
       bucketses fns)))
-
-#+clj
-(leadfn
-  ^{:aliases ["descriptiveStatsR"]}
-  descriptive-stats-regular
-  [serieses :- RegularSeriesList n :- sm/Int & names :- [sm/Str]]
-  (let [fns (map stat-fn names)]
-    (flatten (map (partial apply-desc-stats-r-fns fns n) serieses))))
 
 #+clj
 (defn apply-desc-stats-i-fns [fns interval series]
@@ -224,7 +222,7 @@
                    bucketses (map second fns)))))))
     (map
       (fn [buckets [name _]]
-        {:name (str "descriptiveStatsI(" (:name series) ", " interval ", '" name "')")
+        {:name (str "descriptiveStats(" (:name series) ", " interval ", '" name "')")
          :start (:start series)
          :end (:end series)
          :step interval
@@ -232,26 +230,36 @@
       bucketses fns)))
 
 #+clj
+(defn apply-desc-stats-fns
+  [fns interval series]
+  (if (series/regular? series)
+    (apply-desc-stats-r-fns fns interval series)
+    (apply-desc-stats-i-fns fns interval series)))
+
+#+clj
 (leadfn
-  ^{:aliases ["descriptiveStatsI"]}
-  descriptive-stats-irregular
-  [serieses :- IrregularSeriesList interval :- sm/Int & names :- [sm/Str]]
-  (let [fns (map stat-fn names)]
-    (flatten (map (partial apply-desc-stats-i-fns fns interval) serieses))))
+  ^{:aliases ["descriptiveStats"]}
+  descriptive-stats
+  [serieses period :- sm/Str & names :- [sm/Str]]
+  (let [fns (map stat-fn names)
+        p (time/parse-period period)
+        interval (time/Period->seconds p)]
+    (flatten (map (partial apply-desc-stats-fns fns interval) serieses))))
 
 (leadfn
   ^{:aliases ["forceInterval"]}
   force-interval :- RegularSeriesList
-  [serieses :- IrregularSeriesList interval :- sm/Int]
-  (map
-    (fn [series]
-      (let [start (:start series)
-            bucket-count (quot (- (:end series) start) interval)
-            buckets (make-array #+clj Number bucket-count)]
-        (doseq [[timestamp value] (:values series)]
-          (let [bucket-index (quot (- timestamp start) interval)]
-            (if (and (>= bucket-index 0)
-                     (< bucket-index bucket-count))
-              (aset buckets bucket-index value))))
-        (assoc series :step interval :values (seq buckets))))
-    serieses))
+  [serieses :- IrregularSeriesList period :- sm/Str]
+  (let [interval (-> period time/parse-period time/Period->seconds)]
+    (map
+      (fn [series]
+        (let [start (:start series)
+              bucket-count (quot (- (:end series) start) interval)
+              buckets (make-array #+clj Number bucket-count)]
+          (doseq [[timestamp value] (:values series)]
+            (let [bucket-index (quot (- timestamp start) interval)]
+              (if (and (>= bucket-index 0)
+                       (< bucket-index bucket-count))
+                (aset buckets bucket-index value))))
+          (assoc series :step interval :values (seq buckets))))
+      serieses)))
