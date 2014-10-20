@@ -1,10 +1,13 @@
 (ns lead.functions
+  (:require [lead.core :refer [*configuration*]]
+            [schema.coerce :as coerce])
   #+cljs (:require [clojure.string :as string]
                    [schema.core :as s])
   #+cljs (:require-macros [schema.macros :as sm])
   #+clj
   (:require [schema.core :as s]
-            [schema.macros :as sm]))
+            [schema.macros :as sm]
+            [lead.series :as series]))
 
 ; A simple function just transforms its input--it wil be called after call is called on all of its arguments.
 ; A complicated function is responsible for calling call on its arguments, so it is able to use or change the options.
@@ -55,11 +58,10 @@
 
 (defn call-f
   [name f & args]
-
   (let [args (apply apply vector args)]
-    #_(try
+    (try
       (if-let [input-schema (-> f f-meta :schema :input-schemas first)]
-        (sm/validate input-schema args))
+        ((coerce/coercer input-schema (:input-coercer *configuration*)) args))
       (catch #+clj Throwable #+cljs js/Error t
         (throw (ex-info "Invalid arguments to Lead function"
                         {:function-name name

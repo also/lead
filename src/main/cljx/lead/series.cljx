@@ -4,7 +4,9 @@
     [clojure.string :as string]
     [schema.core :as s]
     #+clj
-    [schema.macros :as sm])
+    [schema.macros :as sm]
+    [lead.builtin-functions :as builtins]
+    [schema.coerce :as coerce])
   #+cljs
   (:require-macros [schema.macros :as sm]))
 
@@ -47,7 +49,23 @@
      :values IrregularSeriesValues
      s/Keyword s/Any})
 
+(defn regular? [series]
+  (boolean (:step series)))
+
 (sm/defschema IrregularSeriesList [IrregularSeries])
+
+
+(defn default-regular-series-coercer [irregular-series]
+  (try
+    (builtins/force-interval [irregular-series "1min"])
+    (catch Exception e irregular-series)))
+
+(defn default-regular-series-list-coercer [irregular-series-list]
+  (map default-regular-series-coercer irregular-series-list))
+
+(def regular-series-coercers
+  {IrregularSeries default-regular-series-coercer
+   IrregularSeriesList default-regular-series-list-coercer})
 
 ; TODO these are probably wrong
 (defn slice-series-start
