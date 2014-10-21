@@ -49,6 +49,8 @@
 
 (sm/defschema IrregularSeriesList [IrregularSeries])
 
+(defn regular? [series] (boolean (:step series)))
+
 ; TODO these are probably wrong
 (defn slice-series-start
   [series start]
