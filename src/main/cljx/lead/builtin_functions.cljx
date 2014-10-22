@@ -263,3 +263,15 @@
                 (aset buckets bucket-index value))))
           (assoc series :step interval :values (seq buckets))))
       serieses)))
+
+(leadfn
+  ^{:aliases ["timeShiftI"]
+    :complicated true}
+  time-shift-irregular :- IrregularSeriesList
+  [opts :- fns/Opts serieses-callable :- fns/LeadCallable period :- sm/Str]
+  (let [shift-interval (-> period time/parse-offset time/Period->seconds -)
+        shifted-opts (assoc opts :start (- (:start opts) shift-interval)
+                                 :end (- (:end opts) shift-interval))
+        serieses (fns/call serieses-callable shifted-opts)]
+    (mapv (fn [series] (assoc series :values (mapv (fn [[ts v]] [(+ ts shift-interval) v]) (:values series))
+                                     :name (str "timeShiftI(" (:name series) ", \"" period "\")"))) serieses)))
