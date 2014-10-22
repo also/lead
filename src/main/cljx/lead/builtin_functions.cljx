@@ -21,7 +21,8 @@
     #+clj [clojure.walk])
   #+cljs (:require-macros [lead.functions :refer [leadfn]])
   #+clj (:require [lead.functions :refer [leadfn]])
-  #+clj (:import [org.apache.commons.math3.stat.descriptive DescriptiveStatistics]))
+  #+clj (:import [org.apache.commons.math3.stat.descriptive DescriptiveStatistics]
+                 (org.apache.commons.math3.stat.regression SimpleRegression)))
 
 (defn
   same-depth?
@@ -64,6 +65,11 @@
   "Applies the map function to each value in each series"
   [serieses f name]
   (map #(assoc % :name (str name \( (:name %) \)) :values (map f (:values %))) serieses))
+
+(defn regular-values->irregular-values [series]
+  (let [step (:step series)
+        start (:start series)]
+    (filter second (map-indexed (fn [i v] [(+ start (* step i)) v]) (:values series)))))
 
 (leadfn
   ^{:uses-opts true
@@ -275,3 +281,41 @@
         serieses (fns/call serieses-callable shifted-opts)]
     (mapv (fn [series] (assoc series :values (mapv (fn [[ts v]] [(+ ts shift-interval) v]) (:values series))
                                      :name (str "timeShiftI(" (:name series) ", \"" period "\")"))) serieses)))
+
+#+clj
+(leadfn
+  ^{:uses-opts true
+    :aliases ["simpleRegression"]}
+  simple-regression ; TODO returns list of mixed series. is this OK?
+  [opts :- fns/Opts serieses :- IrregularSeriesList]
+  (vec (flatten
+     (map (fn [series]
+            (let [start (:start opts)
+                  end (:end opts)
+                  values (if (series/regular? series)
+                           (regular-values->irregular-values series)
+                           (:values series))
+                  regression (SimpleRegression. true)
+                  _ (doseq [[x y] values]
+                      (.addData regression (double x) (double y)))
+                  meta {:intercept                 (.getIntercept regression)
+                        :intercept-std-err         (.getInterceptStdErr regression)
+                        :mean-square-error         (.getMeanSquareError regression)
+                        :r                         (.getR regression)
+                        :regression-sum-squares    (.getRegressionSumSquares regression)
+                        :r-square                  (.getRSquare regression)
+                        :significance              (.getSignificance regression)
+                        :slope                     (.getSlope regression)
+                        :slope-confidence-interval (.getSlopeConfidenceInterval regression)
+                        :slope-std-error           (.getSlopeStdErr regression)
+                        :sum-of-cross-products     (.getSumOfCrossProducts regression)
+                        :sum-squared-errors        (.getSumSquaredErrors regression)
+                        :total-sum-squares         (.getTotalSumSquares regression)
+                        :get-x-sum-squares         (.getXSumSquares regression)}]
+              [series
+               {:name   (str "simpleRegression(" (:name series) ")")
+                :start  start
+                :end    end
+                :meta meta
+                :values [[start (.predict regression (double start))] [end (.predict regression (double end))]]}]))
+          serieses))))
