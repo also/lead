@@ -4,7 +4,10 @@
   #+cljs (:require-macros [schema.macros :as sm])
   #+clj
   (:require [schema.core :as s]
-            [schema.macros :as sm]))
+            [schema.macros :as sm]
+            [lead.series :as series])
+  #+clj
+  (:import (clojure.lang ExceptionInfo)))
 
 ; A simple function just transforms its input--it wil be called after call is called on all of its arguments.
 ; A complicated function is responsible for calling call on its arguments, so it is able to use or change the options.
@@ -67,11 +70,22 @@
                          :error (-> t ex-data :error pr-str)}))))
     (try
       (apply f args)
+      #+clj
+      (catch ExceptionInfo i (if (= :function-internal-error (:lead-exception-type i))
+                               (throw i)
+                               (throw (ex-info "Error in Lead function"
+                                               {:lead-exception-type :function-internal-error
+                                                :message (or (-> i ex-data :message) (.getMessage i))
+                                                :function-name name
+                                                :args          args}
+                                               i))))
       (catch #+clj Throwable #+cljs js/Error t
-                             (throw (ex-info "Error in Lead function"
-                                             {:function-name name
-                                              :args          args}
-                      t))))))
+                                             (throw (ex-info "Error in Lead function"
+                                                             {:lead-exception-type :function-internal-error
+                                                              :message (.getMessage t)
+                                                              :function-name name
+                                                              :args          args}
+                                                             t))))))
 
 (defrecord ComplicatedFunctionCall [name f args]
   LeadCallable
@@ -160,7 +174,7 @@
 (defn function-call [name args]
   (if-let [f (get-fn name)]
     (function->source name f args)
-    (throw (ex-info (str name " is not a function") {:name name}))))
+    (throw (ex-info (str name " is not a function") {:lead-exception-type :illegal-argument :name name}))))
 
 (defn call-function [function opts args]
   (call opts (function-call function args)))
@@ -169,9 +183,9 @@
 (defn call-simple-function [function loaded-args]
   (if-let [f (get-fn function)]
     (if (uses-opts? f)
-      (throw (ex-info (str function " can't be used in this context") {:name function}))
+      (throw (ex-info (str function " can't be used in this context") {:lead-exception-type :illegal-argument :name function}))
       (call-f function f loaded-args))
-    (throw (ex-info (str function " is not a function") {:name function}))))
+    (throw (ex-info (str function " is not a function") {:lead-exception-type :illegal-argument :name function}))))
 
 (defn build [program]
   (if (vector? program)
