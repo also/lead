@@ -1,11 +1,13 @@
 (ns lead.functions
   #+cljs (:require [clojure.string :as string]
-                   [schema.core :as s])
+                   [schema.core :as s]
+                   [lead.core :refer [*configuration*]])
   #+cljs (:require-macros [schema.macros :as sm])
   #+clj
   (:require [schema.core :as s]
             [schema.macros :as sm]
-            [lead.series :as series])
+            [lead.series :as series]
+            [lead.core :refer [*configuration*]])
   #+clj
   (:import (clojure.lang ExceptionInfo)))
 
@@ -60,14 +62,15 @@
   [name f & args]
 
   (let [args (apply apply vector args)]
-    #_(try
-      (if-let [input-schema (-> f f-meta :schema :input-schemas first)]
-        (sm/validate input-schema args))
-      (catch #+clj Throwable #+cljs js/Error t
-        (throw (ex-info "Invalid arguments to Lead function"
-                        {:function-name name
-                         :args args
-                         :error (-> t ex-data :error pr-str)}))))
+    (if (:validate-arguments *configuration*)
+      (try
+        (if-let [input-schema (-> f f-meta :schema :input-schemas first)]
+          (s/validate input-schema args))
+        (catch #+clj Throwable #+cljs js/Error t
+                                               (throw (ex-info "Invalid arguments to Lead function"
+                                                               {:function-name name
+                                                                :args          args
+                                                                :error         (-> t ex-data :error pr-str)})))))
     (try
       (apply f args)
       #+clj

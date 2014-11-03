@@ -75,8 +75,21 @@
   (assoc (transform-inner-exception e)
     :stacktrace (with-out-str (stacktrace/print-cause-trace e))))
 
+(defn eval-targets
+  [targets opts]
+  (let [parsed-targets (map (juxt identity lead.parser/parse) targets)]
+    (into {} (pmap
+               (fn eval-target [[target parsed-target]]
+                 [target
+                  (try
+                    (lead.functions/run parsed-target opts)
+                    (catch Exception e
+                      (core/exception e)
+                      nil))])
+               parsed-targets))))
+
 (defn execute [targets opts]
-  (let [results (core/eval-targets targets opts)
+  (let [results (eval-targets targets opts)
         exceptions (:exceptions @core/*context*)
         exception-details (map transform-exception exceptions)]
     {:opts opts
@@ -92,7 +105,7 @@
   (GET "/render" [target & params]
     (let [targets (if (string? target) [target] target)
           opts (parse-request params)
-          result (flatten (vals (core/eval-targets targets opts)))]
+          result (flatten (vals (eval-targets targets opts)))]
       {:status 200
        :body result}))
 
