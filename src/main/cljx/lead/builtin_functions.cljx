@@ -280,7 +280,10 @@
                                  :end (- (:end opts) shift-interval))
         serieses (fns/call serieses-callable shifted-opts)]
     (mapv (fn [series] (assoc series :values (mapv (fn [[ts v]] [(+ ts shift-interval) v]) (:values series))
-                                     :name (str "timeShiftI(" (:name series) ", \"" period "\")"))) serieses)))
+                                     :name (str "timeShiftI(" (:name series) ", \"" period "\")")
+                                     :start (+ shift-interval (:start series))
+                                     :end (+ shift-interval (:end series))))
+          serieses)))
 
 #+clj
 (leadfn
