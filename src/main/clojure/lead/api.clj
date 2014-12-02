@@ -78,14 +78,14 @@
 (defn eval-targets
   [targets opts]
   (let [parsed-targets (map (juxt identity lead.parser/parse) targets)]
-    (into {} (pmap
+    (into [] (pmap
                (fn eval-target [[target parsed-target]]
-                 [target
-                  (try
-                    (lead.functions/run parsed-target opts)
-                    (catch Exception e
-                      (core/exception e)
-                      nil))])
+                 {:target target
+                  :result (try
+                            (lead.functions/run parsed-target opts)
+                            (catch Exception e
+                              (core/exception e)
+                              nil))})
                parsed-targets))))
 
 (defn execute [targets opts]
@@ -105,7 +105,7 @@
   (GET "/render" [target & params]
     (let [targets (if (string? target) [target] target)
           opts (parse-request params)
-          result (flatten (vals (eval-targets targets opts)))]
+          result (vec (flatten (map :result (eval-targets targets opts))))]
       {:status 200
        :body result}))
 
