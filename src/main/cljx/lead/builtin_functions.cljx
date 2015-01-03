@@ -147,7 +147,7 @@
     :uses-opts true}
   load-from-connector
   [opts :- fns/Opts target :- sm/Str]
-  (connector/load @connector/*connector* target opts))
+  (connector/load connector/*connector* target opts))
 
 (leadfn
   ^{:aliases ["alias"]}

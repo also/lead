@@ -9,15 +9,9 @@
 
 (def ^:dynamic *connector*)
 
-(defn init-connector [] (atom nil))
-
 (defprotocol Connector
   (query [this pattern])
   (load [this target opts]))
-
-(defn set-connector
-  [connector]
-  (reset! *connector* connector))
 
 (defn map-connectors
   [f connectors]

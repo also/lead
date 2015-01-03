@@ -2,7 +2,7 @@
   (:gen-class)
   (:require [lead.api :refer [create-routes add-routes *routes*] :as api]
             [lead.core]
-            [lead.connector :refer [set-connector] :as conn]
+            [lead.connector :as conn]
             [lead.functions :refer [register-fns-from-namespace] :as fns]
             [ring.adapter.jetty :as jetty]))
 
@@ -10,12 +10,14 @@
 (def ^:dynamic *jetty-opts*)
 (def ^:dynamic *handler-wrapper*)
 (def ^:dynamic *configuration*)
+(def ^:dynamic *connector*)
 
 (defn update-config [f & args]
   (apply swap! *configuration* f args))
 
 (defn set-uri-prefix [uri-prefix] (reset! *uri-prefix* uri-prefix))
 (defn set-jetty-opts [opts] (reset! *jetty-opts* opts))
+(defn set-connector [connector] (reset! *connector* connector))
 (defn wrap-handler [handler-wrapper] (reset! *handler-wrapper* handler-wrapper))
 
 (defn load-config [config-file]
@@ -27,7 +29,7 @@
             *jetty-opts* (atom {})
             *handler-wrapper* (atom nil)
             fns/*fn-registry-builder* (fns/create-registry)
-            conn/*connector* (conn/init-connector)
+            *connector* (atom nil)
             *routes* (create-routes)
             *configuration* (atom {})]
     (f)))
@@ -36,7 +38,8 @@
   (let [handler (api/create-handler)
         wrapped-handler (if-let [wrapper @*handler-wrapper*] (wrapper handler) handler)]
     (binding [lead.core/*configuration* @*configuration*
-              fns/*fn-registry* @fns/*fn-registry-builder*]
+              fns/*fn-registry* @fns/*fn-registry-builder*
+              conn/*connector* @*connector*]
       (bound-fn*
         (if-let [uri-prefix @*uri-prefix*]
           (api/wrap-uri-prefix wrapped-handler uri-prefix)

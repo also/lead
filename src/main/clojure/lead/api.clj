@@ -100,7 +100,7 @@
 
 (defroutes handler
   (GET "/find" [query]
-       (let [results (conn/query @conn/*connector* query)]
+       (let [results (conn/query conn/*connector* query)]
          {:status 200
           :body results}))
 
