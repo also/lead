@@ -44,7 +44,9 @@
   (swap! *routes* concat routes))
 
 (defn parse-request [params]
-  (let [now (time/now)
+  (let [now (if-let [now-seconds (params "now")]
+              (time/seconds->DateTime now-seconds)
+              (time/now))
         start-param (params "start" (params "from"))
         end-param (params "end" (params "until"))
         start (if start-param
