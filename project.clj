@@ -20,7 +20,7 @@
     [org.apache.commons/commons-math3 "3.2"]]
   :main ^:skip-aot lead.main
   :aot [lead.matcher]
-  :plugins [[com.keminglabs/cljx "0.4.0"]
+  :plugins [[com.keminglabs/cljx "0.5.0"]
             [codox "0.6.6"]]
   :source-paths ["src/main/clojure"]
   :java-source-paths ["src/main/java"]
@@ -38,7 +38,7 @@
                   {:source-paths ["src/test/cljx"]
                    :output-path "target/generated/test-cljs"
                    :rules :cljs}]}
-  :hooks [cljx.hooks]
+  :aliases {"cleantest" ["do" "clean," "cljx" "once," "test"]}
   ;; need this to work with leiningen 2.3.1 used on travis-ci
   ;; cljx should probably support %s or another way to reference project configuration
   :profiles {:test {:target-path "target"
