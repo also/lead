@@ -1,5 +1,4 @@
-(ns lead.core
-  (:require [lead.core]))
+(ns lead.core)
 
 (def ^:dynamic *configuration*)
 

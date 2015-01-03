@@ -4,7 +4,6 @@
     [clojure.string :as string]
     [lead.functions :as fns]
     [lead.series :as series]
-    [lead.time :as time]
     [schema.core :as sm]
     [lead.series :refer [consolidate-series-values
                          normalize-serieses
@@ -16,6 +15,7 @@
                          path->name
                          RegularSeriesList
                          IrregularSeriesList]]
+    #+clj [lead.time :as time]
     #+clj [lead.connector :as connector]
     #+clj [cheshire.core :as cheshire]
     #+clj [clojure.walk])
@@ -252,6 +252,7 @@
         interval (time/Period->seconds p)]
     (flatten (map (partial apply-desc-stats-fns fns interval) serieses))))
 
+#+clj
 (leadfn
   ^{:aliases ["forceInterval"]}
   force-interval :- RegularSeriesList
@@ -270,6 +271,7 @@
           (assoc series :step interval :values (seq buckets))))
       serieses)))
 
+#+clj
 (leadfn
   ^{:aliases ["timeShiftI"]
     :complicated true}
