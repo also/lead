@@ -37,12 +37,6 @@
 
 (defn safe-json-map [m] (into {} (map (fn [[k v]] [k (safe-json v)]) m)))
 
-(def ^:dynamic *routes*)
-(defn create-routes [] (atom []))
-(defn add-routes
-  [& routes]
-  (swap! *routes* concat routes))
-
 (defn parse-request [params]
   (let [now (if-let [now-seconds (params "now")]
               (time/seconds->DateTime now-seconds)
@@ -164,9 +158,9 @@
       (handler request))))
 
 (defn create-handler
-  []
+  [extra-routes]
   (->
-    (routes handler (apply routes @*routes*) not-found)
+    (routes handler (apply routes extra-routes) not-found)
     wrap-json-response
     wrap-exception
     wrap-json-body
