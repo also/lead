@@ -109,7 +109,7 @@
 
 (declare function-call)
 
-(def ^:dynamic *fn-registry*)
+(def ^:dynamic *fn-registry* {})
 (def ^:dynamic *fn-registry-builder*)
 
 (defn create-registry [] (atom {}))

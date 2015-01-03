@@ -25,8 +25,7 @@
     (is (= [] result))))
 
 (deftest test-eval-targets-missing-function
-  (binding [core/*context* (atom (core/create-context))
-            fns/*fn-registry* {}]
+  (binding [core/*context* (atom (core/create-context))]
     (let [result (api/eval-targets ["missingFunction()"] opts)
           exceptions (:exceptions @core/*context*)]
       (is (= [{:target "missingFunction()", :result nil}] result))
@@ -46,7 +45,7 @@
 (def default-handler (api/create-handler []))
 
 (deftest test-execute-no-targets
-  (let [req {:uri "/execute" :request-method :get :query-string "now=1420088400"}
+  (let [req {:request-method :get :uri "/execute" :query-string "now=1420088400"}
         res (default-handler req)
         body (-> res :body json/parse-string)]
     (is (= 200 (:status res)))
@@ -56,4 +55,27 @@
                     "end" 1420088400}
             "results" []
             "exceptions" []}
+           body))))
+
+(deftype AlwaysEqual []
+  Object
+  (equals [_ _] true))
+
+(def ignore-equality (->AlwaysEqual))
+
+(deftest test-execute-missing-function
+  (let [req {:request-method :get :uri "/execute" :query-string "now=1420088400&target=missingFunction()"}
+        res (default-handler req)
+        body (-> res :body json/parse-string)]
+    (is (= 200 (:status res)))
+    (is (= {"opts" {"params" {"now" "1420088400"}
+                    "now" 1420088400
+                    "start" 1420002000
+                    "end" 1420088400}
+            "results" [{"target" "missingFunction()", "result" nil}]
+            "exceptions" [{"stacktrace" ignore-equality
+                           "message" "missingFunction is not a function"
+                           "details" {"lead-exception-type" "illegal-argument"
+                                      "name" "missingFunction"}
+                           "cause" nil}]}
            body))))
