@@ -39,7 +39,7 @@
 
 (defn parse-request [params]
   (let [now (if-let [now-seconds (params "now")]
-              (time/seconds->DateTime now-seconds)
+              (time/seconds->DateTime (Integer. now-seconds))
               (time/now))
         start-param (params "start" (params "from"))
         end-param (params "end" (params "until"))
