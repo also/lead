@@ -12,7 +12,8 @@
 
 (deftest test-registry
   (let [registry (fns/create-registry)]
-    (binding [fns/*fn-registry* registry]
+    (binding [fns/*fn-registry-builder* registry]
       (fns/register-fns [#+clj (var test-f) #+cljs test-f])
-      (fns/run (parser/parse "test()") {}))
+      (binding [fns/*fn-registry* @fns/*fn-registry-builder*]
+        (fns/run (parser/parse "test()") {})))
     (is (= 2 (count @registry)))))

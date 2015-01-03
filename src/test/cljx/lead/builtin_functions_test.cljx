@@ -45,9 +45,13 @@
   (is (values= [nils] (bi/map-values-above-to-nil [twos] 1)))
   (is (values= [twos] (bi/map-values-above-to-nil [twos] 2))))
 
-(deftest test-group-serieses-by-node
-  (binding [fns/*fn-registry* (fns/create-registry)]
+(def builtin-functions-registry
+  (binding [fns/*fn-registry-builder* (fns/create-registry)]
     (fns/register-fns-from-namespace 'lead.builtin-functions)
+    @fns/*fn-registry-builder*))
+
+(deftest test-group-serieses-by-node
+  (binding [fns/*fn-registry* builtin-functions-registry]
     (let [serieses [ones twos threes]]
       (is (values= [twos] (bi/group-serieses-by-node serieses 0 "avg")))
       (is (values= serieses (bi/group-serieses-by-node serieses 1 "avg"))))))
@@ -56,9 +60,8 @@
   (is (= ["ones" "twos" "threes"] (map :name (bi/simplify-serieses-names [ones twos threes])))))
 
 (deftest test-series-source
-  (binding [fns/*fn-registry* (fns/create-registry)]
-    (fns/register-fns-from-namespace 'lead.builtin-functions)
-    (let [source (fns/->ValueCallable [{:name "", :values  [], :start 1, :end 2, :step 1}])
+  (binding [fns/*fn-registry* builtin-functions-registry]
+    (let [source (fns/->ValueCallable [{:name "", :values [], :start 1, :end 2, :step 1}])
           fn-source (fns/function-call "removeBelowValue" [source 1])
           result (fns/call fn-source {})]
-     (is (= {:name "removeBelowValue()", :values  [], :start 1, :end 2, :step 1} (first result))))))
+      (is (= {:name "removeBelowValue()", :values [], :start 1, :end 2, :step 1} (first result))))))

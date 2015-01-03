@@ -26,7 +26,7 @@
   (binding [*uri-prefix* (atom nil)
             *jetty-opts* (atom {})
             *handler-wrapper* (atom nil)
-            fns/*fn-registry* (fns/create-registry)
+            fns/*fn-registry-builder* (fns/create-registry)
             conn/*connector* (conn/init-connector)
             *routes* (create-routes)
             *configuration* (atom {})]
@@ -35,7 +35,8 @@
 (defn create-handler []
   (let [handler (api/create-handler)
         wrapped-handler (if-let [wrapper @*handler-wrapper*] (wrapper handler) handler)]
-    (binding [lead.core/*configuration* @*configuration*]
+    (binding [lead.core/*configuration* @*configuration*
+              fns/*fn-registry* @fns/*fn-registry-builder*]
       (bound-fn*
         (if-let [uri-prefix @*uri-prefix*]
           (api/wrap-uri-prefix wrapped-handler uri-prefix)
