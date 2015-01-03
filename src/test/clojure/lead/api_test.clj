@@ -3,7 +3,8 @@
             [lead.api :as api]
             [lead.core :as core]
             [lead.functions :as fns]
-            [cheshire.core :as json]))
+            [cheshire.core :as json]
+            [cheshire.generate :as generate]))
 
 (def opts {:now 1420088400
            :start 1420002000
@@ -31,3 +32,13 @@
       (is (= [{:target "missingFunction()", :result nil}] result))
       (is (= 1 (count exceptions)))
       (is (= "missingFunction" (-> exceptions first ex-data :name))))))
+
+(defrecord UnsafeJSON [])
+(generate/add-encoder UnsafeJSON
+                      (fn [_ _] (throw (ex-info "unsafe json" {}))))
+
+(deftest test-safe-json
+  (let [json-string (json/generate-string (api/safe-json (->UnsafeJSON)))
+        result (json/parse-string json-string)]
+    (is (= {"exception-serializing-value" "clojure.lang.ExceptionInfo: unsafe json {}", "value-pr" "#lead.api_test.UnsafeJSON{}"}
+           result))))

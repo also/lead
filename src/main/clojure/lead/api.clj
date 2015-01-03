@@ -1,5 +1,5 @@
 (ns lead.api
-  (:import (com.fasterxml.jackson.core JsonGenerationException JsonGenerator))
+  (:import (com.fasterxml.jackson.core JsonGenerator))
   (:use ring.middleware.params
         ring.middleware.json
         compojure.core
@@ -28,7 +28,7 @@
     (let [value (:value safe)
           json (try
                   (generate-string value)
-                  (catch JsonGenerationException ex
+                  (catch Exception ex
                     (generate-string {:exception-serializing-value (str ex)
                                       :value-pr (pr-str value)})))]
       (.writeRawValue jg json))))
