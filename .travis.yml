@@ -7,7 +7,7 @@ jdk:
 before_script:
   - npm install
   - lein2 cljx
-  - lein2 with-profile cljs cljsbuild once
+  - lein2 cljsbuild once
 script:
   - lein2 test
-  - lein2 with-profile cljs cljsbuild test
+  - lein2 cljsbuild test
