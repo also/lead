@@ -42,3 +42,18 @@
         result (json/parse-string json-string)]
     (is (= {"exception-serializing-value" "clojure.lang.ExceptionInfo: unsafe json {}", "value-pr" "#lead.api_test.UnsafeJSON{}"}
            result))))
+
+(def default-handler (api/create-handler []))
+
+(deftest test-execute-no-targets
+  (let [req {:uri "/execute" :request-method :get :query-string "now=1420088400"}
+        res (default-handler req)
+        body (-> res :body json/parse-string)]
+    (is (= 200 (:status res)))
+    (is (= {"opts" {"params" {"now" "1420088400"}
+                    "now" 1420088400
+                    "start" 1420002000
+                    "end" 1420088400}
+            "results" []
+            "exceptions" []}
+           body))))
