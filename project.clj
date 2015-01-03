@@ -5,7 +5,7 @@
             :url "http://opensource.org/licenses/MIT"}
   :dependencies [
     [org.clojure/clojure "1.6.0"]
-    [org.clojure/clojurescript "0.0-2127"]
+    [org.clojure/clojurescript "0.0-2655"]
     [clj-http "0.7.2"]
     [ring/ring-core "1.2.1"]
     [ring/ring-jetty-adapter "1.2.1"]
@@ -55,5 +55,5 @@
                                                      :output-to "target/test-js/index.js"}}]
                                 :test-commands {"node" ["./node_modules/coffee-script/bin/coffee" "test/coffee/run_clojure_tests.coffee"]}}
                     ; TODO this should replace instaparse dependency
-                    :dependencies [[instaparse-cljs "1.2.2-SNAPSHOT"]]
-                    :plugins [[lein-cljsbuild "1.0.1"]]}})
+                    :dependencies [[com.lucasbradstreet/instaparse-cljs "1.3.4.2"]]
+                    :plugins [[lein-cljsbuild "1.0.4"]]}})
