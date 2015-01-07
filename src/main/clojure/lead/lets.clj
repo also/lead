@@ -17,7 +17,7 @@
   (load [_ target opts]
     (if-let [future (*lets* target)]
       ; TODO check for cycle
-      [@future]
+      @future
       (connector/load wrapped-connector target opts))))
 
 (defn let-future [name target opts]
