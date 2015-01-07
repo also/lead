@@ -22,6 +22,7 @@
   :plugins [[com.keminglabs/cljx "0.5.0"]
             [lein-cljsbuild "1.0.4"]
             [codox "0.6.6"]]
+  :auto-clean false
   :source-paths ["src/main/clojure"]
   :java-source-paths ["src/main/java"]
   :test-paths ["src/test/clojure"]
