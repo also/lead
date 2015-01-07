@@ -18,7 +18,6 @@
     [com.google.guava/guava "15.0"]
     [prismatic/schema "0.2.6"]
     [org.apache.commons/commons-math3 "3.2"]]
-  :main ^:skip-aot lead.main
   :aot [lead.matcher]
   :plugins [[com.keminglabs/cljx "0.5.0"]
             [lein-cljsbuild "1.0.4"]
