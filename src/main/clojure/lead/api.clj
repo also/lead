@@ -13,6 +13,7 @@
             [lead.connector :as conn]
             [lead.time :as time]
             [lead.core :as core]
+            [lead.lets]
             [clojure.string :as string]))
 
 ; TODO this is only for exceptions
@@ -85,7 +86,10 @@
                parsed-targets))))
 
 (defn execute [targets opts]
-  (let [results (eval-targets targets opts)
+  (let [lets (lead.lets/load-lets (-> opts :params (get "let")) opts)
+        results (binding [lead.lets/*lets* lets
+                          conn/*connector* (lead.lets/->LetConnector conn/*connector*)]
+                  (eval-targets targets opts))
         exceptions (:exceptions @core/*context*)
         exception-details (map transform-exception exceptions)]
     {:opts opts
