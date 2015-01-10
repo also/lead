@@ -55,4 +55,5 @@
   ;; cljx should probably support %s or another way to reference project configuration
   :profiles {:test {:target-path "target"
                     :test-paths ["target/test-classes"]}}
-  :codox {:defaults {:doc/format :markdown}})
+  :codox {:defaults {:doc/format :markdown}
+          :sources ["src/main/clojure" "target/classes"]})
