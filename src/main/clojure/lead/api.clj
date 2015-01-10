@@ -34,6 +34,9 @@
                                       :value-pr (pr-str value)})))]
       (.writeRawValue jg json))))
 
+(alter-meta! #'->SafeJSON assoc :no-doc true)
+(alter-meta! #'map->SafeJSON assoc :no-doc true)
+
 (def safe-json ->SafeJSON)
 
 (defn safe-json-map [m] (into {} (map (fn [[k v]] [k (safe-json v)]) m)))
@@ -144,7 +147,9 @@
                   :exceptions          (map transform-exception (:exceptions @core/*context*))})}))))
 
 ; TODO i probably shouldn't be writing CORS handling code
-(defn wrap-cors [handler]
+(defn wrap-cors
+  "Responds with a 200 to OPTIONS requests, and adds `Access-Control-Allow-` headers to support cross-domain requests."
+  [handler]
   (fn [request]
     (let [response (if (= :options (:request-method request))
                      {:status 200}
@@ -156,12 +161,14 @@
                           "Access-Control-Allow-Headers" (get (:headers request) "access-control-request-headers" "")))))))
 
 (defn wrap-context
+  "Binds `lead.core/*context*`."
   [handler]
   (fn [request]
     (binding [core/*context* (atom (core/create-context))]
       (handler request))))
 
 (defn create-handler
+  "Creates a Ring handler with the default wrappers, default Compujure routes, and any extra routes."
   [extra-routes]
   (->
     (routes handler (apply routes extra-routes) not-found)
@@ -172,7 +179,9 @@
     wrap-params
     wrap-context))
 
-(defn wrap-uri-prefix [handler prefix]
+(defn wrap-uri-prefix
+  "Adds a prefix to all routes."
+  [handler prefix]
   (fn [request]
     (let [response (handler (assoc request
                               :uri (string/replace-first (:uri request)

@@ -82,7 +82,11 @@
   (is-leaf [this node]
     (empty? (:children node))))
 
+(alter-meta! #'->MapTreeFinder assoc :no-doc true)
+(alter-meta! #'map->MapTreeFinder assoc :no-doc true)
+
 (defn- path->name [path]
+  "Converts a path (array of segments) to a name. The segment `:*` is converted to the string `*`"
   (str (string/join "." (map (fn [p] (if (= :* p) "*" p)) path))))
 
 ; TODO the meaning of "name" is a little fuzzy in here

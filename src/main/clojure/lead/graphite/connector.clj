@@ -6,7 +6,7 @@
             [lead.connector :refer [Connector connector-list] :as connector]
             [lead.matcher :refer [segment-matcher pattern?]]))
 
-(defn graphite-json->serieses [targets]
+(defn ^:no-doc graphite-json->serieses [targets]
     (map (fn [target]
            (assoc (let [timestamps (map second (:datapoints target))]
                     (if (seq timestamps)
@@ -51,12 +51,15 @@
           targets (:body response)]
       (graphite-json->serieses targets))))
 
+(alter-meta! #'->GraphiteConnector assoc :no-doc true)
+(alter-meta! #'map->GraphiteConnector assoc :no-doc true)
+
 ; https://github.com/graphite-project/carbon/blob/0.9.12/lib/carbon/hashing.py
 ; https://github.com/graphite-project/carbon/blob/0.9.12/lib/carbon/routers.py
 
 (defn connector [url] (->GraphiteConnector url))
 
-(def md5 (Hashing/md5))
+(def ^:private md5 (Hashing/md5))
 
 (defn- compute-ring-position [key]
   (Integer/parseInt (.substring (str (.hashString md5 key Charsets/UTF_8)) 0 4) 16))
@@ -79,12 +82,12 @@
 (defn- build [builder]
   (-> builder :entries sort vec))
 
-(defn create-ring
+(defn ^:no-doc create-ring
   ([nodes] (create-ring 100 nodes))
   ([replicas nodes]
    (build (reduce add-node (create-builder replicas) nodes))))
 
-(defn get-node
+(defn ^:no-doc get-node
   [key entries]
   (let [position (compute-ring-position key)
         entry [position nil]
@@ -101,6 +104,9 @@
     (if (or (pattern? target) (= node (get-node target ring)))
       (connector/load wrapped target opts)
       ())))
+
+(alter-meta! #'->ConsistentHashedGraphiteConnector assoc :no-doc true)
+(alter-meta! #'map->ConsistentHashedGraphiteConnector assoc :no-doc true)
 
 (defn consistent-hashing-cluster [replicas & host-specs]
   (let [ring (create-ring replicas (map :node host-specs))

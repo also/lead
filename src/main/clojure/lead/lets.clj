@@ -1,4 +1,4 @@
-(ns lead.lets
+(ns ^:no-doc lead.lets
   (:require [lead.connector :as connector]
             [lead.parser]
             [lead.functions]))

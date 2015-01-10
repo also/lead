@@ -21,7 +21,7 @@
   :aot [lead.matcher]
   :plugins [[com.keminglabs/cljx "0.5.0"]
             [lein-cljsbuild "1.0.4"]
-            [codox "0.6.6"]]
+            [codox "0.8.10"]]
   :auto-clean false
   :source-paths ["src/main/clojure"]
   :java-source-paths ["src/main/java"]
@@ -54,4 +54,5 @@
   ;; need this to work with leiningen 2.3.1 used on travis-ci
   ;; cljx should probably support %s or another way to reference project configuration
   :profiles {:test {:target-path "target"
-                    :test-paths ["target/test-classes"]}})
+                    :test-paths ["target/test-classes"]}}
+  :codox {:defaults {:doc/format :markdown}})

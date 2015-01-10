@@ -6,12 +6,12 @@
             [lead.functions :refer [register-fns-from-namespace] :as fns]
             [ring.adapter.jetty :as jetty]))
 
-(def ^:dynamic *uri-prefix*)
-(def ^:dynamic *jetty-opts*)
-(def ^:dynamic *handler-wrapper*)
-(def ^:dynamic *configuration*)
-(def ^:dynamic *connector*)
-(def ^:dynamic *routes*)
+(def ^:dynamic ^:no-doc *uri-prefix*)
+(def ^:dynamic ^:no-doc *jetty-opts*)
+(def ^:dynamic ^:no-doc *handler-wrapper*)
+(def ^:dynamic ^:no-doc *configuration*)
+(def ^:dynamic ^:no-doc *connector*)
+(def ^:dynamic ^:no-doc *routes*)
 
 (defn update-config [f & args]
   (apply swap! *configuration* f args))

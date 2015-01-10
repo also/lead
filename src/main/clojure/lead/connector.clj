@@ -13,7 +13,7 @@
   (query [this pattern])
   (load [this target opts]))
 
-(defn map-connectors
+(defn ^:no-doc map-connectors
   [f connectors]
   (flatten (pmap (fn [connector]
                    (try
@@ -23,7 +23,7 @@
                        [])))
                  connectors)))
 
-(defrecord ConnectorList [connectors]
+(defrecord ^:no-doc ConnectorList [connectors]
   Connector
   (query [this pattern]
     (distinct (map-connectors #(query % pattern) connectors)))
@@ -31,7 +31,11 @@
   (load [this target opts]
     (map-connectors #(load % target opts) connectors)))
 
+(alter-meta! #'->ConnectorList assoc :no-doc true)
+(alter-meta! #'map->ConnectorList assoc :no-doc true)
+
 (defn connector-list
+  "Create a connector that calls a list of connectors in parallel."
   [& connectors]
   (->ConnectorList (flatten connectors)))
 
@@ -47,7 +51,7 @@
   [path path-prefix]
   (str (series/path->name path-prefix) \. path))
 
-(defrecord PrefixedConnector [path-prefix connector]
+(defrecord ^:no-doc PrefixedConnector [path-prefix connector]
   Connector
   (query [this pattern]
     (let [pattern-path (series/name->path pattern)]
@@ -69,11 +73,15 @@
              (load connector target opts))
         ()))))
 
+(alter-meta! #'->PrefixedConnector assoc :no-doc true)
+(alter-meta! #'map->PrefixedConnector assoc :no-doc true)
+
 (defn prefixed-connector
+  "Wrap a connector to add a prefix to all names."
   [prefix connector]
   (->PrefixedConnector (series/name->path prefix) connector))
 
-(defrecord LeadConnector [url opts query-opts load-opts]
+(defrecord ^:no-doc LeadConnector [url opts query-opts load-opts]
   Connector
   (query [this pattern]
     (let [url (str (:url this) "/find")
@@ -95,24 +103,29 @@
                                                    "end"    end}}))]
       (:body response))))
 
+(alter-meta! #'->LeadConnector assoc :no-doc true)
+(alter-meta! #'map->LeadConnector assoc :no-doc true)
+
+
 (defn remote
+  "Create a connector that calls a remote Lead API."
   ([url {:keys [opts query-opts load-opts]}]
    (->LeadConnector url opts query-opts load-opts))
   ([url]
    (remote url {})))
 
-(defn TreeNode->map
+(defn ^:no-doc TreeNode->map
   [tree-node]
   {:name    (.getName tree-node)
    :is-leaf (.isLeaf tree-node)})
 
-(defn map->LoadOptions
+(defn ^:no-doc map->LoadOptions
   [opts]
   (reify LoadOptions
     (getStart [this] (seconds->DateTime (:start opts)))
     (getEnd [this] (seconds->DateTime (:end opts)))))
 
-(defn Series->FixedIntervalTimeSeries
+(defn ^:no-doc Series->FixedIntervalTimeSeries
   [series]
   (series/map->FixedIntervalTimeSeries {:name   (.getName series)
                                         :start  (DateTime->seconds (.getStart series))
