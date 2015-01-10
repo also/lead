@@ -2,7 +2,7 @@
 
 The Lead HTTP API maps closely to the [connector API](/src/main/clojure/lead/connector.clj)
 
-The notable difference is the `render` endpoint vs. the `load` function. In the Lead "master" server, the `target` may be a function call, and will be evaluated using `lead.functions`. Other implementors of the Lead API will only be called with a single metric path `target`, which matches the `load` function.
+The notable difference is the `execute` endpoint vs. the `load` function. In the Lead "master" server, the `target` may be a function call, and will be evaluated using `lead.functions`. Other implementors of the Lead API will only be called with a single metric path `target`, which matches the `load` function.
 
 ## `GET /find`
 
@@ -16,7 +16,7 @@ Returns:
 [{"name": "metric.path", "is-leaf": true}]
 ```
 
-## `GET /render`
+## `GET /execute`
 
 Parameters:
 
@@ -25,30 +25,6 @@ Parameters:
 `start`:
 
 `end`:
-
-Returns:
-
-```json
-[
-  {
-    "name": "metric.path",
-    "start": 1412136000,
-    "end": 1412222400,
-    "step": 60,
-    "values": [
-      0,
-      0.1,
-      0.2
-    ]
-  }
-]
-```
-
-## `GET /execute`
-
-Parameters:
-
-Same as `GET /render`
 
 Returns:
 
