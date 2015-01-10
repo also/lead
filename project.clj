@@ -56,4 +56,7 @@
   :profiles {:test {:target-path "target"
                     :test-paths ["target/test-classes"]}}
   :codox {:defaults {:doc/format :markdown}
-          :sources ["src/main/clojure" "target/classes"]})
+          :sources ["src/main/clojure" "target/classes"]
+          :src-dir-uri "https://github.com/also/lead/blob/master/"
+          :src-linenum-anchor-prefix "L"
+          :src-uri-mapping {#"target/classes" #(str "src/main/cljx/" % "x")}})
