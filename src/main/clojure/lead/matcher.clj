@@ -68,11 +68,14 @@
 
 (defprotocol TreeFinder
   (root [this])
-  (children [this node])
-  (child [this node segment])
-  (is-leaf [this node]))
+  (children [this node]
+            "Return a sequence of the name-segments of the node's children.")
+  (child [this node segment]
+         "Return the child of the node with the given name-segment.")
+  (is-leaf [this node]
+           "Return true if the node is a leaf."))
 
-; {children: {:a {:children {:a1 ()} :b ()}}
+; {:children {"a" {:children {"a1" {}} "b" {}}}
 (defrecord MapTreeFinder [tree]
   TreeFinder
   (root [this] tree)

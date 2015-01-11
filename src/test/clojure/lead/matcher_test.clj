@@ -57,7 +57,7 @@
         {:children
           {:*
             {:children
-              {"b" ()}}}}}}))
+              {"b" {}}}}}}}))
 
 (deftest test-wildcard-tree
   (let [[result] (tree-find wildcard-tree "a.x.b")]
