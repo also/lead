@@ -1,6 +1,7 @@
 (ns lead.matcher
   (:require [clojure.string :as string]
             [lead.core :refer [name->path path->name]])
+  (:refer-clojure :exclude [meta])
   (:import java.util.regex.Pattern)
   (:gen-class
     :main false
@@ -67,13 +68,17 @@
   (map segment-matcher (name->path pattern)))
 
 (defprotocol TreeFinder
-  (root [this])
+  (root [this]
+        "Return the root node of the tree.")
   (children [this node]
             "Return a sequence of the name-segments of the node's children.")
   (child [this node segment]
          "Return the child of the node with the given name-segment.")
   (is-leaf [this node]
            "Return true if the node is a leaf."))
+
+(defprotocol TreeMeta
+  (meta [this node]))
 
 ; {:children {"a" {:children {"a1" {}} "b" {}}}
 (defrecord MapTreeFinder [tree]
@@ -84,45 +89,60 @@
   (child [this node segment]
     (get (:children node) segment))
   (is-leaf [this node]
-    (empty? (:children node))))
+    (empty? (:children node)))
+
+  TreeMeta
+  (meta [this node] (:meta node)))
 
 (alter-meta! #'->MapTreeFinder assoc :no-doc true)
 (alter-meta! #'map->MapTreeFinder assoc :no-doc true)
 
-; TODO the meaning of "name" is a little fuzzy in here
-; should it be the node name or the metric name?
 ; see tree-seq
-(defn tree-find [finder pattern]
+(defn tree-find
+  "Returns a lazy sequence of matches of `pattern` in `finder`.
+
+  Eeach match will have these keys:
+
+  * `:path`: The path to the node. Non-enumerable segments will be `:*`.
+  * `:matched-path`: The path to the node, as matched. Non-enumerable segments will be the segment from the pattern.
+  * `:is-leaf`: `true` if the node is a leaf.
+  * `:meta`: Map of metadata.
+  * `:node`: The tree node."
+  [finder pattern]
   (let [pattern-path (name->path pattern)
         walk (fn walk [node path matcher-path]
                (lazy-seq
-                 (let [node-names (children finder node)
-                       nodes (map #(child finder node %) node-names)
+                 (let [child-segments (children finder node)
+                       nodes (map #(child finder node %) child-segments)
                        matcher (first matcher-path)
                        matcher-path (rest matcher-path)]
                    (if (seq matcher-path)
                      ; if there are more segments to match, follow the branches
-                     (mapcat (fn [name node]
+                     (mapcat (fn [segment node]
                                (if (and (not (is-leaf finder node))
-                                        (matcher name))
-                                 (walk node (conj path name) matcher-path)))
-                             node-names nodes)
+                                        (matcher segment))
+                                 (walk node (conj path segment) matcher-path)))
+                             child-segments nodes)
                      ; otherwise return the matches at this level
                      (filter identity
-                             (map (fn [name node]
-                                    (if (matcher name)
-                                      {:path         (conj path name)
-                                       :matched-path (map #(if (= :* %1) %2 %1) (conj path name) pattern-path)
+                             (map (fn [segment node]
+                                    (if (matcher segment)
+                                      {:path         (conj path segment)
+                                       :matched-path (map #(if (= :* %1) %2 %1) (conj path segment) pattern-path)
                                        :is-leaf      (is-leaf finder node)
+                                       :meta         (if (satisfies? TreeMeta finder) (meta finder node))
                                        :node         node}))
-                                  node-names nodes))))))]
+                                  child-segments nodes))))))]
     (walk (root finder) [] (pattern->matcher-path pattern))))
 
 (defn tree-find-leaves [finder pattern]
   (filter :is-leaf (tree-find finder pattern)))
 
 (defn tree-query [finder pattern]
-  (map (fn [result] {:name (path->name (:matched-path result)) :is-leaf (:is-leaf result)}) (tree-find finder pattern)))
+  (map (fn [result] {:name (path->name (:matched-path result))
+                     :is-leaf (:is-leaf result)
+                     :meta (:meta result)})
+       (tree-find finder pattern)))
 
 (defn tree-traverse [finder path]
   (let [walk (fn walk [node path]
