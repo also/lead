@@ -36,26 +36,28 @@ Returns:
     "start": 1409332578,
     "end": 1409418978
   },
-  "results": {
-    "randomWalkFunction('random walk')": [
-      {
-        "name": "random walk",
-        "start": 1409332578,
-        "end": 1409418978,
-        "step": 60,
-        "values": [
-          0,
-          -0.09634609011669037,
-          -0.3853613444125503,
-          -0.45663534456644406
-        ]
-      }
-    ]
-  },
+  "results": [
+    {
+      "name":"randomWalkFunction('random walk')",
+      "result": [
+        {
+          "name": "random walk",
+          "start": 1409332578,
+          "end": 1409418978,
+          "step": 60,
+          "values": [
+            0,
+            -0.09634609011669037,
+            -0.3853613444125503,
+            -0.45663534456644406
+          ]
+        }
+      ]
+    }
+  ],
   "exceptions": []
 }
 ```
-
 
 ## `POST /execute`
 

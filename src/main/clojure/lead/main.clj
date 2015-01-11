@@ -17,7 +17,7 @@
   (apply swap! *configuration* f args))
 
 (defn set-uri-prefix
-  "Sets a frefix for all API paths."
+  "Sets a prefix for all API paths."
   [uri-prefix]
   (reset! *uri-prefix* uri-prefix))
 
