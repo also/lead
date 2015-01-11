@@ -12,7 +12,7 @@
     [ring/ring-json "0.2.0"]
     [compojure "1.1.5"]
     [com.lucasbradstreet/instaparse-cljs "1.3.4.2"]
-    [org.clojure/tools.logging "0.2.6"]
+    [org.clojure/tools.logging "0.3.1"]
     [com.cemerick/clojurescript.test "0.2.1"]
     [joda-time/joda-time "2.3"]
     [com.google.guava/guava "15.0"]
