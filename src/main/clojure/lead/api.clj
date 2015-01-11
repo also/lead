@@ -1,13 +1,13 @@
 (ns lead.api
   (:import (com.fasterxml.jackson.core JsonGenerator))
-  (:use ring.middleware.params
-        ring.middleware.json
-        compojure.core
-        clojure.tools.logging)
   (:require [compojure.route :as route]
+            [compojure.core :refer [defroutes routes GET POST]]
+            [ring.middleware.params]
+            [ring.middleware.json]
             [cheshire.core :refer [generate-string]]
             [cheshire.generate :as generate]
             [clojure.stacktrace :as stacktrace]
+            [clojure.tools.logging :as log]
             [lead.functions]
             [lead.parser]
             [lead.connector :as conn]
@@ -139,7 +139,7 @@
   (fn [request]
     (try (f request)
       (catch Exception e
-        (warn e "Exception handling request")
+        (log/warn e "Exception handling request")
         {:status 500
          :headers {"Content-Type" "application/json; charset=utf-8"}
          :body (generate-string
@@ -172,11 +172,11 @@
   [extra-routes]
   (->
     (routes handler (apply routes extra-routes) not-found)
-    wrap-json-response
+    ring.middleware.json/wrap-json-response
     wrap-exception
-    wrap-json-body
+    ring.middleware.json/wrap-json-body
     wrap-cors
-    wrap-params
+    ring.middleware.params/wrap-params
     wrap-context))
 
 (defn wrap-uri-prefix
