@@ -18,12 +18,20 @@
 
 ; parsing the grammar is slow in clojurescript, so we do it during compilation
 #+clj
-(defmacro load-parser []
+(defmacro ^:no-doc load-parser []
   `(quote ~(-> "graphite_grammar" clojure.java.io/resource slurp insta/parser :grammar)))
 
 (def parser (insta/parser (load-parser) :start :target))
 
-(defn parse [s]
+(defn parse
+  "Parses and transforms a string into a program that can be built.
+
+  ```
+  f(1) -> [\"f\" [1]]
+  x    -> [\"load\" [\"x\"]]
+  ```
+  "
+  [s]
   (let [result (parser s)]
     (if (insta/failure? result)
       (throw (ex-info "Failed to parse" {:message (with-out-str  (fail/pprint-failure result))
