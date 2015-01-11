@@ -27,6 +27,7 @@
   :java-source-paths ["src/main/java"]
   :test-paths ["src/test/clojure"]
   :javac-options ["-target" "1.6" "-source" "1.6"]
+  :prep-tasks []
   :cljx {:builds [{:source-paths ["src/main/cljx"]
                    :output-path "target/classes"
                    :rules :clj}
@@ -50,7 +51,7 @@
                                    :output-dir "target/test-js"
                                    :output-to "target/test-js/index.js"}}]
               :test-commands {"node" ["./node_modules/coffee-script/bin/coffee" "test/coffee/run_clojure_tests.coffee"]}}
-  :aliases {"cleantest" ["do" "clean," "cljx" "once," "test"]}
+  :aliases {"cleantest" ["do" "clean," "cljx" "once," "javac," "compile," "test"]}
   ;; need this to work with leiningen 2.3.1 used on travis-ci
   ;; cljx should probably support %s or another way to reference project configuration
   :profiles {:test {:target-path "target"

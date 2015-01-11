@@ -1,5 +1,6 @@
 (ns lead.matcher
-  (:require [clojure.string :as string])
+  (:require [clojure.string :as string]
+            [lead.core :refer [name->path path->name]])
   (:import java.util.regex.Pattern)
   (:gen-class
     :main false
@@ -63,12 +64,12 @@
   (boolean ((segment-matcher pattern) segment)))
 
 (defn pattern->matcher-path [pattern]
-  (map segment-matcher (string/split pattern #"\.")))
+  (map segment-matcher (name->path pattern)))
 
 (defprotocol TreeFinder
   (root [this])
   (children [this node])
-  (child [this node name])
+  (child [this node segment])
   (is-leaf [this node]))
 
 ; {children: {:a {:children {:a1 ()} :b ()}}
@@ -77,23 +78,19 @@
   (root [this] tree)
   (children [this node]
     (keys (:children node)))
-  (child [this node name]
-    (get (:children node) name))
+  (child [this node segment]
+    (get (:children node) segment))
   (is-leaf [this node]
     (empty? (:children node))))
 
 (alter-meta! #'->MapTreeFinder assoc :no-doc true)
 (alter-meta! #'map->MapTreeFinder assoc :no-doc true)
 
-(defn- path->name [path]
-  "Converts a path (array of segments) to a name. The segment `:*` is converted to the string `*`"
-  (str (string/join "." (map (fn [p] (if (= :* p) "*" p)) path))))
-
 ; TODO the meaning of "name" is a little fuzzy in here
 ; should it be the node name or the metric name?
 ; see tree-seq
 (defn tree-find [finder pattern]
-  (let [pattern-path (string/split pattern #"\.")
+  (let [pattern-path (name->path pattern)
         walk (fn walk [node path matcher-path]
                (lazy-seq
                  (let [node-names (children finder node)

@@ -11,10 +11,9 @@
                          safe-sum
                          safe-min
                          safe-max
-                         name->path
-                         path->name
                          RegularSeriesList
                          IrregularSeriesList]]
+    [lead.core :refer [name->path path->name]]
     #+clj [lead.time :as time]
     #+clj [lead.connector :as connector]
     #+clj [cheshire.core :as cheshire]

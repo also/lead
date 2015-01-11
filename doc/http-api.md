@@ -38,7 +38,7 @@ Returns:
   },
   "results": [
     {
-      "name":"randomWalkFunction('random walk')",
+      "name": "randomWalkFunction('random walk')",
       "result": [
         {
           "name": "random walk",

@@ -1,7 +1,6 @@
 (ns lead.series
   (:require
     [lead.math :as math]
-    [clojure.string :as string]
     [schema.core :as s]
     #+clj
     [schema.macros :as sm])
@@ -82,9 +81,6 @@
 
 (alter-meta! #'->FixedIntervalTimeSeries assoc :no-doc true)
 (alter-meta! #'map->FixedIntervalTimeSeries assoc :no-doc true)
-
-(defn name->path [name] (string/split name #"\."))
-(defn path->name [path] (string/join "." path))
 
 (defn non-nil [values] (keep identity values))
 

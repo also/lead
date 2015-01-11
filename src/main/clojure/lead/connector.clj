@@ -1,11 +1,11 @@
 (ns lead.connector
   (:require [lead.matcher :as matcher]
-            [lead.series :as series]
             [lead.time :refer [DateTime->seconds Duration->seconds seconds->DateTime]]
             [lead.core :as core]
+            [lead.series :as series]
             [clj-http.client :as http])
   (:refer-clojure :exclude [load])
-  (:import [lead LoadOptions Series TreeNode]))
+  (:import [lead LoadOptions]))
 
 (def ^:dynamic *connector*)
 
@@ -49,25 +49,25 @@
 
 (defn- add-prefix
   [path path-prefix]
-  (str (series/path->name path-prefix) \. path))
+  (str (core/path->name path-prefix) \. path))
 
 (defrecord ^:no-doc PrefixedConnector [path-prefix connector]
   Connector
   (query [this pattern]
-    (let [pattern-path (series/name->path pattern)]
+    (let [pattern-path (core/name->path pattern)]
       (if (matches-prefix pattern-path path-prefix)
         (let [unprefixed-pattern (drop-prefix pattern-path path-prefix)]
           (if (seq unprefixed-pattern)
             (map #(update-in % [:name] add-prefix path-prefix)
-                 (query connector (series/path->name unprefixed-pattern)))
-            [{:name (series/path->name path-prefix)
+                 (query connector (core/path->name unprefixed-pattern)))
+            [{:name (core/path->name path-prefix)
               :is-leaf false}]))
         ())))
 
   (load [this prefixed-target opts]
-    (let [target-path (series/name->path prefixed-target)
+    (let [target-path (core/name->path prefixed-target)
           target (if (matches-prefix target-path path-prefix)
-                   (series/path->name (drop-prefix target-path path-prefix)))]
+                   (core/path->name (drop-prefix target-path path-prefix)))]
       (if target
         (map #(update-in % [:name] add-prefix path-prefix)
              (load connector target opts))
@@ -79,7 +79,7 @@
 (defn prefixed-connector
   "Wrap a connector to add a prefix to all names."
   [prefix connector]
-  (->PrefixedConnector (series/name->path prefix) connector))
+  (->PrefixedConnector (core/name->path prefix) connector))
 
 (defrecord ^:no-doc LeadConnector [url opts query-opts load-opts]
   Connector
