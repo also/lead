@@ -30,6 +30,7 @@
   "Defines a Lead function.
 
   Several metadata keys can be added:
+
   * `:uses-opts`: Takes `opts` as the first argument.
   * `:complicated`: Takes `opts` as the first argument and the rest of the arguments without being called.
   * `:aliases`: A vector of names used to register the function."
@@ -60,6 +61,7 @@
    s/Keyword s/Any})
 
 (defprotocol LeadCallable
+  "A Lead function bound to its arguments that can be called."
   (call [this opts]))
 
 (defrecord ValueCallable [value]
@@ -69,10 +71,14 @@
 (alter-meta! #'->ValueCallable assoc :no-doc true)
 (alter-meta! #'map->ValueCallable assoc :no-doc true)
 
-(defn lead-callable? [x]
+(defn lead-callable?
+  "Returns true if x implements [[LeadCallable]]."
+  [x]
   (satisfies? LeadCallable x))
 
-(defn call-args [opts args]
+(defn call-args
+  "Evaluates the arguments to a Lead function. [[LeadCallable]]s are called; everything else is left as-is."
+  [opts args]
   (vec (map (fn [arg]
           (if (lead-callable? arg)
             (call arg opts)
@@ -80,6 +86,7 @@
         args)))
 
 (defn call-f
+  "Calls a Lead function, validating its arguments and wrapping any exceptions."
   [name f & args]
 
   (let [args (apply apply vector args)]
@@ -137,8 +144,6 @@
 (alter-meta! #'->SimpleWithOptsFunctionCall assoc :no-doc true)
 (alter-meta! #'map->SimpleWithOptsFunctionCall assoc :no-doc true)
 
-(declare function-call)
-
 (def ^:dynamic *fn-registry* {})
 (def ^:dynamic *fn-registry-builder*)
 
@@ -161,13 +166,18 @@
                 :last  (if last (simplify-schema last))})
      :output (if-let [output (:output-schema schema)] (simplify-schema output))}))
 
-(defn function-info []
+(defn function-info
+  "Returns information about all registered functions."
+  []
   (into {} (map (fn [[k v]]
                   [k (let [meta (f-meta v)] (select-keys (assoc meta :schema (simplify-function-schema v))
                                    [:schema :aliases :name :file :ns :arglists :line]))])
                 *fn-registry*)))
 
-(defn fn-names [f] (cons (str (:name (f-meta f))) (:aliases (f-meta f))))
+(defn- fn-names
+  "Return all the names of the function."
+  [f]
+  (cons (str (:name (f-meta f))) (:aliases (f-meta f))))
 
 (defn register-fns
   "Registers a list of functions by it's aliases."
@@ -200,20 +210,26 @@
 
 (defn get-fn [name] (*fn-registry* name))
 
-(defn function->source [name f args]
+(defn- function->source
+  "Binds a function var `f` to arguments `args` in a [[LeadCallable]]."
+  [name f args]
   (if (:complicated (f-meta f))
     (->ComplicatedFunctionCall name f args)
     (if (:uses-opts (f-meta f))
       (->SimpleWithOptsFunctionCall name f args)
       (->SimpleFunctionCall name f args))))
 
-(defn function-call [name args]
+(defn function-call
+  "Looks up a function by `name` and binds it to arguments `args` in a [[LeadCallable]].
+
+  Throws an exception if no function with `name` exists."
+  [name args]
   (if-let [f (get-fn name)]
     (function->source name f args)
     (throw (ex-info (str name " is not a function") {:lead-exception-type :illegal-argument :name name}))))
 
-(defn call-function [function opts args]
-  (call opts (function-call function args)))
+(defn ^:deprecated ^:no-doc call-function [name opts args]
+  (call opts (function-call name args)))
 
 ; TODO this really means no opts
 (defn call-simple-function [function loaded-args]

@@ -22,7 +22,7 @@
 ;  :end
 
 
-(defprotocol TimeSeries
+(defprotocol ^:deprecated TimeSeries
   (slice [this start end]))
 
 (sm/defschema RegularSeriesValues
@@ -74,11 +74,14 @@
                     :values (drop-last offset-dps (:values series)))
       series))))
 
-(defrecord FixedIntervalTimeSeries [step start end values]
+(defrecord ^:deprecated FixedIntervalTimeSeries [step start end values]
   TimeSeries
   (slice
     [this start end]
     (-> this (slice-series-start start) (slice-series-end end))))
+
+(alter-meta! #'->FixedIntervalTimeSeries assoc :no-doc true)
+(alter-meta! #'map->FixedIntervalTimeSeries assoc :no-doc true)
 
 (defn name->path [name] (string/split name #"\."))
 (defn path->name [path] (string/join "." path))
