@@ -20,4 +20,4 @@
 (defn name->path
   "Converts a name (or pattern) to a vector of segments."
   [name]
-  (string/split name #"\."))
+  (string/split name #"\." -1))
