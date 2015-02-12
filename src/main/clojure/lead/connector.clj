@@ -81,6 +81,22 @@
   [prefix connector]
   (->PrefixedConnector (core/name->path prefix) connector))
 
+(defrecord ^:no-doc FilteringConnector [filter connector]
+  Connector
+  (query [this pattern]
+    (if (filter pattern)
+      (query connector pattern)
+      ()))
+  (load [this target opts]
+    (if (filter target)
+      (load connector target opts)
+      ())))
+
+(alter-meta! #'->FilteringConnector assoc :no-doc true)
+(alter-meta! #'map->FilteringConnector assoc :no-doc true)
+
+(def filtering-connector ->FilteringConnector)
+
 (defrecord ^:no-doc LeadConnector [url opts query-opts load-opts]
   Connector
   (query [this pattern]
