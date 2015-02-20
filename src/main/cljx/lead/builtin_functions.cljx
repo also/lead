@@ -13,7 +13,7 @@
                          safe-max
                          RegularSeriesList
                          IrregularSeriesList]]
-    [lead.core :refer [name->path path->name]]
+    [lead.core :refer [name->path path->name] :as core]
     #+clj [lead.time :as time]
     #+clj [lead.connector :as connector]
     #+clj [cheshire.core :as cheshire]
@@ -69,6 +69,13 @@
   (let [step (:step series)
         start (:start series)]
     (filter second (map-indexed (fn [i v] [(+ start (* step i)) v]) (:values series)))))
+
+(leadfn
+  ^:complicated
+  configuration
+  [opts :- fns/Opts names :- sm/Any body :- sm/Any]
+  (binding [core/*configuration* (core/apply-configuration names)]
+    (first (fns/call-args opts [body]))))
 
 (leadfn
   ^{:uses-opts true

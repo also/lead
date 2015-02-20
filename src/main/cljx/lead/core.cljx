@@ -21,3 +21,14 @@
   "Converts a name (or pattern) to a vector of segments."
   [name]
   (string/split name #"\." -1))
+
+(defn apply-configuration [names]
+  (let [names (if (string? names) [names] names)]
+    (reduce (fn [configuration name]
+              (let [configuration-fn (-> configuration :configurations ((keyword name)))]
+                (if-not configuration-fn (throw (ex-info (str name " is not a valid configuration name") {:name name})))
+                (if-let [result (configuration-fn configuration)]
+                  result
+                  ; TODO this is really an internal error-the configuration function returned falsey
+                  (throw (ex-info (str name " is not a valid configuration name") {:name name})))))
+            *configuration* names)))
