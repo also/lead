@@ -78,6 +78,12 @@
     (first (fns/call-args opts [body]))))
 
 (leadfn
+  options
+  [serieses options]
+  (prn serieses)
+  (mapv #(update-in % [:options] merge options) serieses))
+
+(leadfn
   ^{:uses-opts true
     :aliases ["param"]}
   param-value
