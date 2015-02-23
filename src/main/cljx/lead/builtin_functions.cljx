@@ -178,11 +178,11 @@
    :sum    (fn sum [^DescriptiveStatistics stats] (.getSum stats))
    :mean   (fn mean [^DescriptiveStatistics stats] (.getMean stats))
    :stddev (fn stdddev [^DescriptiveStatistics stats] (.getStandardDeviation stats))
-   :50th   (fn pct50th [^DescriptiveStatistics stats] (.getPercentile stats 0.5))
-   :75th   (fn pct75th [^DescriptiveStatistics stats] (.getPercentile stats 0.75))
-   :95th   (fn pct95th [^DescriptiveStatistics stats] (.getPercentile stats 0.95))
-   :99th   (fn pct99th [^DescriptiveStatistics stats] (.getPercentile stats 0.99))
-   :999th  (fn pct999th [^DescriptiveStatistics stats] (.getPercentile stats 0.999))})
+   :50th   (fn pct50th [^DescriptiveStatistics stats] (.getPercentile stats (double 50)))
+   :75th   (fn pct75th [^DescriptiveStatistics stats] (.getPercentile stats (double 75)))
+   :95th   (fn pct95th [^DescriptiveStatistics stats] (.getPercentile stats (double 95)))
+   :99th   (fn pct99th [^DescriptiveStatistics stats] (.getPercentile stats (double 99)))
+   :999th  (fn pct999th [^DescriptiveStatistics stats] (.getPercentile stats (double 99.9)))})
 
 #+clj
 (defn stat-fn [name]
