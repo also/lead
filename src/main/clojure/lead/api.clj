@@ -78,15 +78,16 @@
 (defn eval-targets
   [targets opts]
   (let [parsed-targets (map (juxt identity lead.parser/parse) targets)]
-    (into [] (pmap
-               (fn eval-target [[target parsed-target]]
-                 {:target target
-                  :result (try
-                            (lead.functions/run parsed-target opts)
-                            (catch Exception e
-                              (core/exception e)
-                              nil))})
-               parsed-targets))))
+    (binding [core/*configuration* (core/apply-configuration (or (-> opts :params (get "configuration")) []))]
+      (into [] (pmap
+                (fn eval-target [[target parsed-target]]
+                  {:target target
+                   :result (try
+                             (lead.functions/run parsed-target opts)
+                             (catch Exception e
+                               (core/exception e)
+                               nil))})
+                parsed-targets)))))
 
 (defn execute [targets opts]
   (let [lets (lead.lets/load-lets (-> opts :params (get "let")) opts)
