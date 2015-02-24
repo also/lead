@@ -78,7 +78,8 @@
     (first (fns/call-args opts [body]))))
 
 (leadfn
-  options
+  ^{:aliases ["addOptions"]}
+  add-options
   [serieses options]
   (prn serieses)
   (mapv #(update-in % [:options] merge options) serieses))
