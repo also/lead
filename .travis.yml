@@ -5,8 +5,7 @@ jdk:
   - openjdk7
 before_script:
   - npm install
-  - lein2 cljx
-  - lein2 cljsbuild once
+  - lein2 do cljx, cljsbuild once, compile, javac
 script:
   - lein2 test
   - lein2 cljsbuild test
