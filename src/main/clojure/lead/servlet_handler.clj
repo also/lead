@@ -9,4 +9,7 @@
       (lead/create-handler))))
 
 (defn handle [handler req res]
-  (servlet/update-servlet-response res (handler (servlet/build-request-map req))))
+  (servlet/update-servlet-response res (handler (merge
+                                                  (servlet/build-request-map req)
+                                                  {:servlet-request req
+                                                   :servlet-response res}))))
