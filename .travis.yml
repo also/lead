@@ -5,7 +5,8 @@ jdk:
   - openjdk7
 before_script:
   - npm install
-  - lein2 do cljx, cljsbuild once, compile, javac
 script:
   - lein2 test
+  # https://github.com/technomancy/leiningen/issues/1827
+  - lein2 test lead.builtin-functions-test
   - lein2 cljsbuild test

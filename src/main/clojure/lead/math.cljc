@@ -1,7 +1,7 @@
 (ns lead.math)
 
-(def minus #+clj -' #+cljs -)
-(def mult #+clj *' #+cljs *)
+(def minus #?@(:clj [-'] :cljs [-]))
+(def mult #?@(:clj [*'] :cljs [*]))
 
 ; TODO figure out exceptions
 (defn abs "(abs n) is the absolute value of n" [n]

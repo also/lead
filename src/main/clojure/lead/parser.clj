@@ -1,10 +1,8 @@
 (ns lead.parser
   (:refer-clojure :exclude [read-string])
   (:require [instaparse.core :as insta]
-            [#+clj clojure.edn #+cljs cljs.reader :refer [read-string]]
-            [instaparse.failure :as fail])
-  #+cljs
-  (:require-macros [lead.parser :refer [load-parser]]))
+            [clojure.edn :refer [read-string]]
+            [instaparse.failure :as fail]))
 
 (def transforms
   {:string str
@@ -16,8 +14,6 @@
    :number (comp read-string str)
    :target identity})
 
-; parsing the grammar is slow in clojurescript, so we do it during compilation
-#+clj
 (defmacro ^:no-doc load-parser []
   `(quote ~(-> "graphite_grammar" clojure.java.io/resource slurp insta/parser :grammar)))
 

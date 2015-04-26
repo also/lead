@@ -5,17 +5,14 @@
 
   * A simple function just transforms its input--it wil be called after `call` is called on all of its arguments.
   * A complicated function is responsible for calling `call` on its arguments, so it is able to use or change the options."
-  #+cljs (:require [clojure.string :as string]
-                   [schema.core :as s]
-                   [lead.core :refer [*configuration*]])
-  #+cljs (:require-macros [schema.macros :as sm])
-  #+clj
   (:require [clojure.string :as string]
             [schema.core :as s]
-            [schema.macros :as sm]
             [lead.core :refer [*configuration*]])
-  #+clj
-  (:import (clojure.lang ExceptionInfo)))
+  #?@(:clj [(:require [schema.macros :as sm])
+            (:import (clojure.lang ExceptionInfo))]
+      :cljs [(:require-macros
+               [schema.macros :as sm]
+               lead.functions)]))
 
 (defn- leadfn-meta [m]
   (assoc m
@@ -26,26 +23,24 @@
                 (if (:doc m) (str "\n\n" (:doc m)) ""))
            (:doc m))))
 
-(defmacro leadfn
-  "Defines a Lead function.
+#?(:clj (defmacro leadfn
+   "Defines a Lead function.
 
-  Several metadata keys can be added:
+   Several metadata keys can be added:
 
-  * `:uses-opts`: Takes `opts` as the first argument.
-  * `:complicated`: Takes `opts` as the first argument and the rest of the arguments without being called.
-  * `:aliases`: A vector of names used to register the function."
-  [name & args]
-  `(sm/if-cljs
-     (do
-       (sm/defn ~name ~@args)
-       (aset ~name "meta" ~(assoc (meta name) :name (str name) :leadfn true)))
-     (sm/defn ~(vary-meta name leadfn-meta) ~@args)))
+   * `:uses-opts`: Takes `opts` as the first argument.
+   * `:complicated`: Takes `opts` as the first argument and the rest of the arguments without being called.
+   * `:aliases`: A vector of names used to register the function."
+   [name & args]
+   `(sm/if-cljs
+      (do
+        (sm/defn ~name ~@args)
+        (aset ~name "meta" ~(assoc (meta name) :name (str name) :leadfn true)))
+      (sm/defn ~(vary-meta name leadfn-meta) ~@args))))
 
-#+cljs
-(defn f-meta [f] (aget f "meta"))
+#?(:cljs (defn f-meta [f] (aget f "meta")))
 
-#+clj
-(def f-meta meta)
+#?(:clj (def f-meta meta))
 
 (defn uses-opts?
   [f]
@@ -94,23 +89,22 @@
       (try
         (if-let [input-schema (-> f f-meta :schema :input-schemas first)]
           (s/validate input-schema args))
-        (catch #+clj Throwable #+cljs js/Error t
+        (catch #?(:clj Throwable :cljs js/Error) t
                                                (throw (ex-info "Invalid arguments to Lead function"
                                                                {:function-name name
                                                                 :args          args
                                                                 :error         (-> t ex-data :error pr-str)})))))
     (try
       (apply f args)
-      #+clj
-      (catch ExceptionInfo i (if (= :function-internal-error (:lead-exception-type i))
-                               (throw i)
-                               (throw (ex-info "Error in Lead function"
-                                               {:lead-exception-type :function-internal-error
-                                                :message (or (-> i ex-data :message) (.getMessage i))
-                                                :function-name name
-                                                :args          args}
-                                               i))))
-      (catch #+clj Throwable #+cljs js/Error t
+      #?(:clj (catch ExceptionInfo i (if (= :function-internal-error (:lead-exception-type i))
+                                (throw i)
+                                (throw (ex-info "Error in Lead function"
+                                                {:lead-exception-type :function-internal-error
+                                                 :message             (or (-> i ex-data :message) (.getMessage i))
+                                                 :function-name       name
+                                                 :args                args}
+                                                i)))))
+      (catch #?(:clj Throwable :cljs js/Error) t
                                              (throw (ex-info "Error in Lead function"
                                                              {:lead-exception-type :function-internal-error
                                                               :message (.getMessage t)
@@ -185,19 +179,14 @@
   (if (seq fns) (swap! *fn-registry-builder* (partial apply assoc) (flatten
     (map (fn [f] (map (fn [n] [n f]) (fn-names f))) fns)))))
 
-#+clj
 (defn- enumerate-namespace
   [namespace]
-  (require namespace)
-  (vals (ns-publics namespace)))
-
-#+cljs
-(defn- enumerate-namespace
-  [namespace]
-  ; TODO maybe replace other chars?
-  (let [goog-ns (string/replace (str namespace) \- \_)]
-    (goog/require goog-ns)
-    (-> goog-ns goog/getObjectByName js->clj vals)))
+  #?@(:clj [(require namespace)
+            (vals (ns-publics namespace))]
+      :cljs [; TODO maybe replace other chars?
+            (let [goog-ns (string/replace (str namespace) \- \_)]
+              (goog/require goog-ns)
+              (-> goog-ns goog/getObjectByName js->clj vals))]))
 
 (defn find-fns
   "Find all Lead function vars in a namespace."
