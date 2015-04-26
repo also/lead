@@ -1,4 +1,4 @@
-(defproject com.ryanberdeen/lead "0.1.0-SNAPSHOT"
+(defproject com.ryanberdeen/lead "0.1.1-SNAPSHOT"
   :description "Maybe an alternative to Graphite"
   :url "https://github.com/also/lead"
   :license {:name "MIT License"
