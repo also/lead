@@ -170,14 +170,22 @@
 
 (defn- fn-names
   "Return all the names of the function."
-  [f]
-  (cons (str (:name (f-meta f))) (:aliases (f-meta f))))
+  [f opts]
+  (let [meta (f-meta f)]
+    (mapcat (fn [name]
+              (let [full-name (str (or (:namespace opts) (:ns meta)) \. name)]
+                (if (:import opts)
+                  [full-name name]
+                  [full-name])))
+            (cons (str (:name meta)) (:aliases meta)))))
 
 (defn register-fns
   "Registers a list of functions by it's aliases."
-  [fns]
-  (if (seq fns) (swap! *fn-registry-builder* (partial apply assoc) (flatten
-    (map (fn [f] (map (fn [n] [n f]) (fn-names f))) fns)))))
+  [fns opts]
+  (if (seq fns)
+    (swap! *fn-registry-builder*
+           (partial apply assoc)
+           (flatten (map (fn [f] (map (fn [n] [n f]) (fn-names f opts))) fns)))))
 
 (defn- enumerate-namespace
   [namespace]
@@ -193,9 +201,10 @@
   [namespace]
   (filter #(:leadfn (f-meta %)) (enumerate-namespace namespace)))
 
-(def register-fns-from-namespace
+(defn register-fns-from-namespace
   "Registers all Lead functions in a namespace."
-  (comp register-fns find-fns))
+  ([ns] (register-fns-from-namespace ns {:import true}))
+  ([ns opts] (register-fns (find-fns ns) opts)))
 
 (defn get-fn [name] (*fn-registry* name))
 
