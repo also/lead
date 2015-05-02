@@ -203,8 +203,8 @@
 
 (defn register-fns-from-namespace
   "Registers all Lead functions in a namespace."
-  ([ns] (register-fns-from-namespace ns {:import true}))
-  ([ns opts] (register-fns (find-fns ns) opts)))
+  ([ns] (register-fns-from-namespace ns {}))
+  ([ns opts] (register-fns (find-fns ns) (merge {:import true} opts))))
 
 (defn get-fn [name] (*fn-registry* name))
 
