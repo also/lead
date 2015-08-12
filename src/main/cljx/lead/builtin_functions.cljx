@@ -192,6 +192,7 @@
    :sum    (fn sum [^DescriptiveStatistics stats] (.getSum stats))
    :mean   (fn mean [^DescriptiveStatistics stats] (.getMean stats))
    :stddev (fn stdddev [^DescriptiveStatistics stats] (.getStandardDeviation stats))
+   :1st    (fn pct1st [^DescriptiveStatistics stats] (.getPercentile stats (double 1)))
    :1th    (fn pct1th [^DescriptiveStatistics stats] (.getPercentile stats (double 1)))
    :5th    (fn pct5th [^DescriptiveStatistics stats] (.getPercentile stats (double 5)))
    :25th   (fn pct25th [^DescriptiveStatistics stats] (.getPercentile stats (double 25)))
