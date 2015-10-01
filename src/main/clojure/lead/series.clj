@@ -2,8 +2,7 @@
   (:require
     [lead.math :as math]
     [schema.core :as s]
-    #?(:clj [schema.macros :as sm]))
-  #?(:cljs (:require-macros [schema.macros :as sm])))
+    [schema.macros :as sm]))
 
 ; A series has these attributes:
 ;  :values           a list of values

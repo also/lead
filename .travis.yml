@@ -3,10 +3,5 @@ lein: lein2
 jdk:
   - oraclejdk7
   - openjdk7
-before_script:
-  - npm install
 script:
   - lein2 test
-  # https://github.com/technomancy/leiningen/issues/1827
-  - lein2 test lead.builtin-functions-test
-  - lein2 cljsbuild test
