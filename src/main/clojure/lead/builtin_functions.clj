@@ -14,13 +14,12 @@
                          RegularSeriesList
                          IrregularSeriesList]]
     [lead.core :refer [name->path path->name] :as core]
-    #+clj [lead.time :as time]
-    #+clj [lead.connector :as connector]
-    #+clj [cheshire.core :as cheshire]
-    #+clj [clojure.walk])
-  #+cljs (:require-macros [lead.functions :refer [leadfn]])
-  #+clj (:require [lead.functions :refer [leadfn]])
-  #+clj (:import [org.apache.commons.math3.stat.descriptive DescriptiveStatistics]
+    [lead.functions :refer [leadfn]]
+    [lead.time :as time]
+    [lead.connector :as connector]
+    [cheshire.core :as cheshire]
+    [clojure.walk])
+  (:import [org.apache.commons.math3.stat.descriptive DescriptiveStatistics]
                  (org.apache.commons.math3.stat.regression SimpleRegression)))
 
 (defn
@@ -91,12 +90,11 @@
   [opts :- fns/Opts & name :- [sm/Any]]                       ; TODO should be (sm/either sm/Str sm/Int)
   (get-in (:params opts) name))
 
-#+clj
 (leadfn
-  ^{:aliases ["parseJson"]}
-  parse-json
-  [string :- sm/Str]
-  (cheshire/parse-string string))
+   ^{:aliases ["parseJson"]}
+   parse-json
+   [string :- sm/Str]
+   (cheshire/parse-string string))
 
 (leadfn
   serieses
@@ -154,14 +152,6 @@
   [serieses :- RegularSeriesList factor :- sm/Num]
   (map-serieses serieses #(if % (* factor %)) "scale"))
 
-#+clj
-(leadfn
-  ^{:aliases ["load"]
-    :uses-opts true}
-  load-from-connector
-  [opts :- fns/Opts target :- sm/Str]
-  (connector/load connector/*connector* target opts))
-
 (leadfn
   ^{:aliases ["alias"]}
   rename-serieses
@@ -183,7 +173,37 @@
   [serieses :- RegularSeriesList value :- sm/Num]
   (replace-serieses-values-with-nil #(<= % value) serieses "removeBelowValue"))
 
-#+clj
+(leadfn
+  ^{:aliases ["forceInterval"]}
+  force-interval :- RegularSeriesList
+  [serieses :- IrregularSeriesList period :- sm/Str]
+  (let [interval (-> period time/parse-period time/Period->seconds)]
+    (map
+      (fn [series]
+        (let [start (:start series)
+              bucket-count (quot (- (:end series) start) interval)
+              buckets (make-array Number bucket-count)]
+          (doseq [[timestamp value] (:values series)]
+            (let [bucket-index (quot (- timestamp start) interval)]
+              (if (and (>= bucket-index 0)
+                       (< bucket-index bucket-count))
+                (aset buckets bucket-index value))))
+          (assoc series :step interval :values (seq buckets))))
+      serieses)))
+
+(leadfn
+  ^{:aliases ["query"]}
+  query-from-connector
+  [pattern :- sm/Str]
+  (connector/query connector/*connector* pattern))
+
+(leadfn
+  ^{:aliases   ["load"]
+    :uses-opts true}
+  load-from-connector
+  [opts :- fns/Opts target :- sm/Str]
+  (connector/load connector/*connector* target opts))
+
 (def statfns
   {:min    (fn min [^DescriptiveStatistics stats] (.getMin stats))
    :max    (fn max [^DescriptiveStatistics stats] (.getMax stats))
@@ -202,34 +222,31 @@
    :99th   (fn pct99th [^DescriptiveStatistics stats] (.getPercentile stats (double 99)))
    :999th  (fn pct999th [^DescriptiveStatistics stats] (.getPercentile stats (double 99.9)))})
 
-#+clj
 (defn stat-fn [name]
   (if-let [statfn ((keyword name) statfns)]
     [name statfn]
-    (throw (ex-info "invalid statistic function name" {:type :invalid-input
+    (throw (ex-info "invalid statistic function name" {:type  :invalid-input
                                                        :input name}))))
 
-#+clj
 (defn apply-desc-stats-r-fns [fns interval series]
   (let [n (quot interval (:step series))
         n-slices (Math/ceil (/ (count (:values series)) n))
         bucketses (vec (map (fn [_] (make-array Number n-slices)) fns))]
     (dorun (map-indexed (fn [i slice]
-                    (let [stats (DescriptiveStatistics. (double-array slice))]
-                      (dorun
-                        (map #(aset %1 i (%2 stats))
-                             bucketses (map second fns)))))
-                  (partition-all n (:values series))))
+                          (let [stats (DescriptiveStatistics. (double-array slice))]
+                            (dorun
+                              (map #(aset %1 i (%2 stats))
+                                   bucketses (map second fns)))))
+                        (partition-all n (:values series))))
     (map
       (fn [buckets [name _]]
-        {:name (str "descriptiveStats(" (:name series) ", " n ", '" name "')")
-         :start (:start series)
-         :end (:end series)
-         :step (* n (:step series))
+        {:name   (str "descriptiveStats(" (:name series) ", " n ", '" name "')")
+         :start  (:start series)
+         :end    (:end series)
+         :step   (* n (:step series))
          :values (seq buckets)})
       bucketses fns)))
 
-#+clj
 (defn apply-desc-stats-i-fns [fns interval series]
   (let [start (:start series)
         n-slices (quot (- (:end series) start) interval)
@@ -245,21 +262,19 @@
                    bucketses (map second fns)))))))
     (map
       (fn [buckets [name _]]
-        {:name (str "descriptiveStats(" (:name series) ", " interval ", '" name "')")
-         :start (:start series)
-         :end (:end series)
-         :step interval
+        {:name   (str "descriptiveStats(" (:name series) ", " interval ", '" name "')")
+         :start  (:start series)
+         :end    (:end series)
+         :step   interval
          :values (seq buckets)})
       bucketses fns)))
 
-#+clj
 (defn apply-desc-stats-fns
   [fns interval series]
   (if (series/regular? series)
     (apply-desc-stats-r-fns fns interval series)
     (apply-desc-stats-i-fns fns interval series)))
 
-#+clj
 (leadfn
   ^{:aliases ["descriptiveStats"]}
   descriptive-stats
@@ -269,28 +284,8 @@
         interval (time/Period->seconds p)]
     (flatten (map (partial apply-desc-stats-fns fns interval) serieses))))
 
-#+clj
 (leadfn
-  ^{:aliases ["forceInterval"]}
-  force-interval :- RegularSeriesList
-  [serieses :- IrregularSeriesList period :- sm/Str]
-  (let [interval (-> period time/parse-period time/Period->seconds)]
-    (map
-      (fn [series]
-        (let [start (:start series)
-              bucket-count (quot (- (:end series) start) interval)
-              buckets (make-array #+clj Number bucket-count)]
-          (doseq [[timestamp value] (:values series)]
-            (let [bucket-index (quot (- timestamp start) interval)]
-              (if (and (>= bucket-index 0)
-                       (< bucket-index bucket-count))
-                (aset buckets bucket-index value))))
-          (assoc series :step interval :values (seq buckets))))
-      serieses)))
-
-#+clj
-(leadfn
-  ^{:aliases ["timeShiftI"]
+  ^{:aliases     ["timeShiftI"]
     :complicated true}
   time-shift-irregular :- IrregularSeriesList
   [opts :- fns/Opts serieses-callable :- fns/LeadCallable period :- sm/Str]
@@ -304,40 +299,39 @@
                                      :end (+ shift-interval (:end series))))
           serieses)))
 
-#+clj
 (leadfn
   ^{:uses-opts true
-    :aliases ["simpleRegression"]}
-  simple-regression ; TODO returns list of mixed series. is this OK?
+    :aliases   ["simpleRegression"]}
+  simple-regression                                         ; TODO returns list of mixed series. is this OK?
   [opts :- fns/Opts serieses :- IrregularSeriesList]
   (vec (flatten
-     (map (fn [series]
-            (let [start (:start opts)
-                  end (:end opts)
-                  values (if (series/regular? series)
-                           (regular-values->irregular-values series)
-                           (:values series))
-                  regression (SimpleRegression. true)
-                  _ (doseq [[x y] values]
-                      (.addData regression (double x) (double y)))
-                  meta {:intercept                 (.getIntercept regression)
-                        :intercept-std-err         (.getInterceptStdErr regression)
-                        :mean-square-error         (.getMeanSquareError regression)
-                        :r                         (.getR regression)
-                        :regression-sum-squares    (.getRegressionSumSquares regression)
-                        :r-square                  (.getRSquare regression)
-                        :significance              (.getSignificance regression)
-                        :slope                     (.getSlope regression)
-                        :slope-confidence-interval (.getSlopeConfidenceInterval regression)
-                        :slope-std-error           (.getSlopeStdErr regression)
-                        :sum-of-cross-products     (.getSumOfCrossProducts regression)
-                        :sum-squared-errors        (.getSumSquaredErrors regression)
-                        :total-sum-squares         (.getTotalSumSquares regression)
-                        :get-x-sum-squares         (.getXSumSquares regression)}]
-              [series
-               {:name   (str "simpleRegression(" (:name series) ")")
-                :start  start
-                :end    end
-                :meta meta
-                :values [[start (.predict regression (double start))] [end (.predict regression (double end))]]}]))
-          serieses))))
+         (map (fn [series]
+                (let [start (:start opts)
+                      end (:end opts)
+                      values (if (series/regular? series)
+                               (regular-values->irregular-values series)
+                               (:values series))
+                      regression (SimpleRegression. true)
+                      _ (doseq [[x y] values]
+                          (.addData regression (double x) (double y)))
+                      meta {:intercept                 (.getIntercept regression)
+                            :intercept-std-err         (.getInterceptStdErr regression)
+                            :mean-square-error         (.getMeanSquareError regression)
+                            :r                         (.getR regression)
+                            :regression-sum-squares    (.getRegressionSumSquares regression)
+                            :r-square                  (.getRSquare regression)
+                            :significance              (.getSignificance regression)
+                            :slope                     (.getSlope regression)
+                            :slope-confidence-interval (.getSlopeConfidenceInterval regression)
+                            :slope-std-error           (.getSlopeStdErr regression)
+                            :sum-of-cross-products     (.getSumOfCrossProducts regression)
+                            :sum-squared-errors        (.getSumSquaredErrors regression)
+                            :total-sum-squares         (.getTotalSumSquares regression)
+                            :get-x-sum-squares         (.getXSumSquares regression)}]
+                  [series
+                   {:name   (str "simpleRegression(" (:name series) ")")
+                    :start  start
+                    :end    end
+                    :meta   meta
+                    :values [[start (.predict regression (double start))] [end (.predict regression (double end))]]}]))
+              serieses))))

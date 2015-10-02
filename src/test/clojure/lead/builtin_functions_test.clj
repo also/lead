@@ -1,11 +1,7 @@
 (ns lead.builtin-functions-test
-  #+clj
-  (:require [clojure.test :refer [deftest is]])
-  #+cljs
-  (:require-macros [cemerick.cljs.test :refer [deftest is]])
-  (:require [lead.functions :as fns]
-            [lead.builtin-functions :as bi]
-            [cemerick.cljs.test :as t]))
+  (:require [clojure.test :refer [deftest is]]
+            [lead.functions :as fns]
+            [lead.builtin-functions :as bi]))
 
 (defn fake-series [name values] {:name (str "fake." name), :step 1, :values (vec values), :start 0, :end (count values)})
 
