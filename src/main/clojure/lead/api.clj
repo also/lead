@@ -96,9 +96,15 @@
                   (eval-targets targets opts))
         exceptions (:exceptions @core/*context*)
         exception-details (map transform-exception exceptions)]
-    {:opts opts
-     :results results
-     :exceptions exception-details}))
+    (if (> (count exception-details)
+           0)
+      {:status 500
+       :opts opts
+       :results results
+       :exceptions exception-details}
+      {:opts opts
+       :results results
+       :exceptions exception-details})))
 
 (defroutes handler
   (GET "/find" [query]
